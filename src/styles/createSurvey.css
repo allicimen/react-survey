@@ -1,0 +1,55 @@
+/* styles/createSurvey.css */
+
+/* Anket oluşturma alanının genel düzeni */
+.create-survey-wrapper {
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+/* Kartların olduğu sol taraf */
+.survey-content {
+  width: 100%;
+  max-width: 770px;
+}
+
+/* Sağ tarafta yüzen araç çubuğu (+ butonu vs.) */
+.floating-sidebar {
+  position: fixed; /* Ekranda sabit durması için */
+  /* Gerçek projede responsive ayarı gerekebilir, şimdilik sağa yaslıyoruz */
+  margin-left: 780px; 
+  top: 100px;
+  background: white;
+  padding: 10px 5px;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Seçili olan sorunun soluna mavi çizgi ekle */
+.question-card.active {
+  border-left: 6px solid #4285f4;
+  padding-left: 18px; /* Border kalınlığı kadar içeri it */
+}
+
+/* Sorunun altındaki buton grubu (Kopyala, Sil, Gerekli) */
+.question-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  margin-top: 20px;
+  padding-top: 15px;
+  gap: 15px;
+}
+
+/* Gerekli anahtarı (Toggle Switch) kutusu */
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: #5f6368;
+}

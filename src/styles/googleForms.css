@@ -1,0 +1,73 @@
+/* styles/googleForms.css */
+
+/* İçeriği ortalayan ana kapsayıcı (Anket genişliği) */
+.container {
+  max-width: 770px;
+  margin: 0 auto;
+  padding-top: 12px;
+  padding-bottom: 60px;
+}
+
+/* Beyaz Kart Yapısı (Her soru bir karttır) */
+.form-card {
+  background-color: var(--surface-color);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  padding: 24px;
+  margin-bottom: 12px;
+  position: relative; /* İçindeki elementleri hizalamak için */
+}
+
+/* Anket Başlığının olduğu kartın üstündeki mor şerit */
+.form-card.header-card {
+  border-top: 10px solid var(--primary-color);
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+/* Google tarzı altı çizili input alanı */
+.input-text {
+  width: 100%;
+  padding: 8px 0;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  background: transparent;
+  outline: none;
+  font-size: 16px;
+  transition: border-bottom 0.3s ease;
+}
+
+/* Inputa tıklanınca alt çizgi mor olsun */
+.input-text:focus {
+  border-bottom: 2px solid var(--primary-color);
+}
+
+/* Ana Buton (Mor Buton) */
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 10px 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+/* Sadece ikon olan butonlar (Çöp kutusu vb.) */
+.icon-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  color: #5f6368;
+  font-size: 20px;
+}
+
+.icon-btn:hover {
+  background-color: #f5f5f5;
+  border-radius: 50%;
+}
