@@ -38,7 +38,7 @@ const Home = () => {
     isLoading
   } = useHome();
 
-  // MOBİL KONTROLÜ
+  // MOBİL KONTROLÜ (Yatay kaymayı engellemek için kritik)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -57,29 +57,47 @@ const Home = () => {
     );
   }
 
-  // --- DİNAMİK STİLLER ---
-  // Masaüstündeki o boşluğu yöneten ana konteyner stili
+  // --- DİNAMİK STİLLER (Masaüstü Boşluk & Mobil Kayma Çözümü) ---
   const containerStyle = {
-    maxWidth: isMobile ? '100%' : '1200px', // Masaüstünde alanı biraz daha genişlettik
+    maxWidth: isMobile ? '100%' : '1200px', // Masaüstünde 1200px yaptık
     margin: '0 auto',
-    padding: isMobile ? '20px 15px' : '40px 24px',
-    paddingBottom: '50px'
+    padding: isMobile ? '20px 15px' : '40px 24px', // Mobilde kenarları daralttık
+    paddingBottom: '100px',
+    boxSizing: 'border-box',
+    overflowX: 'hidden' // Yatay kaymayı kesin olarak engeller
   };
 
   const gridStyle = {
     display: 'grid',
-    // Boşluk kalmaması için minmax değerini esnettik
+    // Mobilde tam genişlik, masaüstünde esnek kartlar
     gridTemplateColumns: isMobile 
         ? '1fr' 
         : 'repeat(auto-fill, minmax(min(100%, 350px), 1fr))', 
-    gap: '24px',
-    justifyContent: 'start' // Kartları sola yaslar, böylece boşluk solda değil sağda (veya eşit) kalır
+    gap: isMobile ? '16px' : '24px',
+    justifyContent: 'start'
   };
 
   return (
     <div style={containerStyle}>
       
-      {/* 1. İSTATİSTİKLER */}
+      {/* 1. ÜST BAR & GERİ BUTONU */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
+        <button
+          onClick={() => navigate('/')}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px',
+            backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '30px',
+            cursor: 'pointer', color: '#64748b', fontWeight: '600', fontSize: '14px',
+            transition: 'all 0.2s'
+          }}
+          onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#f1f5f9'; e.currentTarget.style.color = '#1e293b'; }}
+          onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'white'; e.currentTarget.style.color = '#64748b'; }}
+        >
+          <span>←</span> Ana Sayfaya Dön
+        </button>
+      </div>
+
+      {/* 2. İSTATİSTİKLER */}
       <div style={{ marginBottom: '40px' }}>
         <h1 style={{ fontSize: isMobile ? '24px' : '28px', color: '#1e293b', marginBottom: '20px', fontWeight:'800' }}>Panelim</h1>
         <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
@@ -98,7 +116,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* 2. ARAMA ÇUBUĞU */}
+      {/* 3. ARAMA */}
       <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', marginBottom: '24px', gap: '15px' }}>
         <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#334155', margin: 0 }}>Anketlerim</h2>
         <div style={{ position: 'relative', width: isMobile ? '100%' : 'auto' }}>
@@ -110,7 +128,7 @@ const Home = () => {
         </div>
       </div>
 
-      {/* 3. ANKET LİSTESİ */}
+      {/* 4. LİSTE */}
       <div style={gridStyle}>
         {filteredSurveys.length === 0 ? (
           <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '80px', backgroundColor: '#fff', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
@@ -138,7 +156,7 @@ const Home = () => {
                        <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', backgroundColor:'#f8fafc', padding:'6px 10px', borderRadius:'20px' }}>{formatDate(survey.createdAt)}</span>
                     </div>
                     <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#1e293b', margin: '0 0 8px 0', lineHeight: '1.4' }}>{survey.title}</h3>
-                    <p style={{ fontSize: '14px', color: '#64748b', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: isMobile ? '240px' : '280px' }}>{survey.description || "Açıklama girilmemiş..."}</p>
+                    <p style={{ fontSize: '14px', color: '#64748b', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: isMobile ? '100%' : '280px' }}>{survey.description || "Açıklama girilmemiş..."}</p>
                   </div>
                 </Link>
 
@@ -162,7 +180,6 @@ const Home = () => {
   );
 };
 
-// Sabit Stiller
 const statsCardStyle = { flex: 1, minWidth: '220px', backgroundColor: '#fff', padding: '24px', borderRadius: '20px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'center' };
 const surveyCardStyle = { backgroundColor: '#fff', borderRadius: '20px', padding: '24px', borderTop: '1px solid #f1f5f9', borderRight: '1px solid #f1f5f9', borderBottom: '1px solid #f1f5f9', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', transition: 'all 0.3s', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '220px', position: 'relative', overflow: 'hidden' };
 const actionBtnStyle = { width: '40px', height: '40px', borderRadius: '10px', border: 'none', backgroundColor: '#f1f5f9', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s', fontSize: '16px' };
