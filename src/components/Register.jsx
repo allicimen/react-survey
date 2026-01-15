@@ -1,136 +1,160 @@
-import React, { useState } from "react";
-import { auth } from "../firebase";
-import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth"; // updateProfile'i ekledik
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase'; // Firebase yolun farklıysa burayı düzelt
 
 const Register = () => {
-  const [firstName, setFirstName] = useState(""); // İsim için hafıza
-  const [lastName, setLastName] = useState("");   // Soyisim için hafıza
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    setError("");
-    setSuccess("");
-
-    if (password.length < 6) {
-      setError("Şifre en az 6 karakter olmalı!");
-      return;
-    }
-
+    setError('');
     try {
-      // 1. Önce kullanıcıyı oluşturuyoruz
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-
-      // 2. Oluşan kullanıcının profiline İsim ve Soyismini ekliyoruz
-      await updateProfile(user, {
-        displayName: `${firstName} ${lastName}`
-      });
-
-      setSuccess(`Kayıt Başarılı! Aramıza hoş geldin, ${firstName} 🎉`);
-      
-      // Kutucukları temizleyelim
-      setFirstName("");
-      setLastName("");
-      setEmail("");
-      setPassword("");
-      
+      await createUserWithEmailAndPassword(auth, email, password);
+      navigate('/dashboard'); // Başarılıysa panele git
     } catch (err) {
-      console.error(err);
-      if (err.code === "auth/email-already-in-use") {
-        setError("Bu e-posta adresi zaten kayıtlı.");
-      } else if (err.code === "auth/invalid-email") {
-        setError("Geçersiz e-posta adresi.");
-      } else {
-        setError("Bir hata oluştu: " + err.message);
-      }
+      setError('Kayıt başarısız: ' + err.message);
     }
   };
 
   return (
     <div style={styles.container}>
+      
+      {/* KART YAPISI */}
       <div style={styles.card}>
-        <h2 style={styles.title}>Kayıt Ol</h2>
+        
+        {/* 1. GERİ GİT BUTONU (Sol Üst) */}
+        <div style={{ width: '100%', display: 'flex', justifyContent: 'flex-start', marginBottom: '20px' }}>
+            <button onClick={() => navigate('/')} style={styles.backButton}>
+                ← Ana Sayfa
+            </button>
+        </div>
+
+        <h2 style={styles.title}>Yeni Hesap Oluştur</h2>
         
         {error && <p style={styles.error}>{error}</p>}
-        {success && <p style={styles.success}>{success}</p>}
 
         <form onSubmit={handleRegister} style={styles.form}>
-          <div style={styles.row}>
-            <input
-              type="text"
-              placeholder="Adınız"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              style={styles.halfInput}
-              required
-            />
-            <input
-              type="text"
-              placeholder="Soyadınız"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              style={styles.halfInput}
-              required
-            />
-          </div>
-
           <input
             type="email"
-            placeholder="E-posta Adresiniz"
+            placeholder="E-posta Adresi"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             style={styles.input}
             required
           />
-          
           <input
             type="password"
-            placeholder="Şifre (En az 6 karakter)"
+            placeholder="Şifre"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             style={styles.input}
             required
           />
-
-          <button type="submit" style={styles.button}>
-            Kayıt Ol
-          </button>
+          <button type="submit" style={styles.button}>Kayıt Ol</button>
         </form>
+
+        {/* 2. GİRİŞ YAP BUTONU (En Alt) */}
+        <div style={styles.loginLinkContainer}>
+            <p style={{ color: '#64748b' }}>Zaten bir hesabın var mı?</p>
+            <Link to="/login" style={styles.link}>
+                Giriş Yap
+            </Link>
+        </div>
+
       </div>
     </div>
   );
 };
 
-// CSS Stilleri (Görseli biraz daha güzelleştirdim)
+// --- CSS STİLLERİ (Mobil Uyumlu) ---
 const styles = {
-  container: { 
-    display: "flex", justifyContent: "center", alignItems: "center", 
-    height: "100vh", backgroundColor: "#f0f2f5", fontFamily: "Arial, sans-serif" 
+  container: {
+    minHeight: '100vh',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#f8fafc',
+    padding: '20px',
   },
-  card: { 
-    backgroundColor: "white", padding: "2.5rem", borderRadius: "12px", 
-    boxShadow: "0 8px 16px rgba(0,0,0,0.1)", width: "400px", textAlign: "center" 
+  card: {
+    backgroundColor: 'white',
+    padding: '40px',
+    borderRadius: '16px',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+    width: '100%',
+    maxWidth: '400px', // Çok geniş olmasın
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
   },
-  title: { marginBottom: "1.5rem", color: "#333", fontSize: "24px" },
-  form: { display: "flex", flexDirection: "column", gap: "1rem" },
-  row: { display: "flex", gap: "10px" }, // İsim ve Soyisim yan yana dursun diye
-  halfInput: { 
-    width: "50%", padding: "12px", borderRadius: "6px", border: "1px solid #ddd", fontSize: "14px" 
+  backButton: {
+    background: 'none',
+    border: 'none',
+    color: '#64748b',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '600',
+    display: 'flex',
+    alignItems: 'center',
+    padding: 0,
   },
-  input: { 
-    padding: "12px", borderRadius: "6px", border: "1px solid #ddd", fontSize: "14px", width: "100%", boxSizing: "border-box" 
+  title: {
+    fontSize: '24px',
+    fontWeight: '800',
+    color: '#1e293b',
+    marginBottom: '20px',
   },
-  button: { 
-    padding: "12px", backgroundColor: "#007bff", color: "white", border: "none", 
-    borderRadius: "6px", cursor: "pointer", fontSize: "16px", fontWeight: "bold", marginTop: "10px",
-    transition: "background 0.3s"
+  form: {
+    width: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '15px',
   },
-  error: { color: "#dc3545", fontSize: "14px", marginBottom: "10px", backgroundColor: "#f8d7da", padding: "8px", borderRadius: "4px" },
-  success: { color: "#28a745", fontSize: "14px", marginBottom: "10px", backgroundColor: "#d4edda", padding: "8px", borderRadius: "4px" }
+  input: {
+    padding: '12px',
+    borderRadius: '8px',
+    border: '1px solid #e2e8f0',
+    fontSize: '16px',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box', // Taşmayı önler
+  },
+  button: {
+    padding: '14px',
+    backgroundColor: '#2563eb',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '16px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    marginTop: '10px',
+  },
+  error: {
+    color: '#ef4444',
+    marginBottom: '10px',
+    fontSize: '14px',
+  },
+  loginLinkContainer: {
+    marginTop: '25px',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '5px',
+    borderTop: '1px solid #e2e8f0',
+    paddingTop: '20px',
+    width: '100%',
+  },
+  link: {
+    color: '#2563eb',
+    fontWeight: '700',
+    textDecoration: 'none',
+    fontSize: '16px',
+  }
 };
 
 export default Register;
