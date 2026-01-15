@@ -1,93 +1,103 @@
+// src/services/aiService.js
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const API_KEY = "AIzaSyCKx6EJ9dfvRXIIj6jtMDEaCpQFPireA5c"; 
 
-// Yardımcı Fonksiyon: Google'dan kullanılabilir modelleri çeker
-async function findActiveModel() {
-  try {
-    const listUrl = `https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`;
-    const response = await fetch(listUrl);
-    const data = await response.json();
-    
-    if (data.models) {
-      // İçinde "generateContent" özelliği olan ve isminde "gemini" geçen ilk modeli bul
-      const validModel = data.models.find(m => 
-        m.supportedGenerationMethods.includes("generateContent") && 
-        m.name.includes("gemini")
-      );
-      if (validModel) {
-        console.log("Bulunan Çalışan Model:", validModel.name);
-        return validModel.name; // Örn: "models/gemini-1.0-pro" döner
-      }
-    }
-  } catch (e) {
-    console.error("Model listesi alınamadı:", e);
-  }
-  // Eğer bulamazsa en garanti yedeği döndür
-  return "models/gemini-pro";
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
+// Yapay Zeka Kurulumu
+let genAI = null;
+
+if (API_KEY && !API_KEY.includes("BURAYA")) {
+  genAI = new GoogleGenerativeAI(API_KEY);
 }
 
-export const generateQuestionsAI = async (topic) => {
-  
-  // Önce çalışan modeli buluyoruz (Auto-Detect)
-  const modelName = await findActiveModel();
-  
-  // URL'yi dinamik modele göre oluşturuyoruz
-  const url = `https://generativelanguage.googleapis.com/v1beta/${modelName}:generateContent?key=${API_KEY}`;
+// Denenecek Modeller Listesi (Sırayla hepsini zorlayacağız)
+const MODEL_NAMES = [
+  "gemini-1.5-flash",
+  "gemini-pro",
+  "gemini-1.0-pro",
+  "gemini-1.5-pro"
+];
 
-  const requestBody = {
-    contents: [
-      {
-        parts: [
-          {
-            text: `
-              Sen bir anket asistanısın. Şu konu hakkında 5 anket sorusu üret: "${topic}".
-              
-              KURALLAR:
-              1. Sadece saf JSON formatında cevap ver.
-              2. Markdown formatı (backtick) KULLANMA.
-              3. Cevap şu formatta bir array olsun:
-              [
-                { "text": "Soru 1", "type": "multipleChoice", "options": ["A", "B"] },
-                { "text": "Soru 2", "type": "text", "options": [] }
-              ]
-            `
-          }
-        ]
+// Yardımcı Fonksiyon: Hangi model çalışıyorsa onunla cevap alır
+async function tryGenerateContent(promptText) {
+  if (!genAI) throw new Error("API Anahtarı girilmemiş.");
+
+  let lastError = null;
+
+  for (const modelName of MODEL_NAMES) {
+    try {
+      console.log(`Deneniyor: ${modelName}...`); // Konsolda görmek için
+      const model = genAI.getGenerativeModel({ model: modelName });
+      
+      const result = await model.generateContent(promptText);
+      const response = await result.response;
+      return response.text(); // Başarılıysa cevabı döndür ve döngüden çık
+
+    } catch (error) {
+      console.warn(`${modelName} çalışmadı (404 veya yetki yok).`);
+      lastError = error;
+      // 404 hatasıysa diğer modele geç, değilse (internet yoksa vs) durma devam et
+      if (!error.message.includes("404") && !error.message.includes("not found")) {
+         // Ciddi bir hataysa da şansımızı diğerlerinde deneyelim
       }
-    ]
-  };
+    }
+  }
+  throw lastError || new Error("Hiçbir model çalışmadı.");
+}
+
+// 1. Soru Üretme Fonksiyonu
+export const generateQuestionsAI = async (userPrompt) => {
+  const prompt = `Sen bir anketörsün. "${userPrompt}" hakkında 5 soru üret. 
+  ÖNEMLİ: Cevabı SADECE aşağıdaki gibi saf bir JSON dizisi olarak ver. 
+  Başına veya sonuna 'json' veya ''' gibi işaretler koyma.
+  Format: [{"text": "Soru?", "type": "text", "options": []}]`;
 
   try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestBody)
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(`Google Hatası: ${errorData.error?.message || response.status}`);
-    }
-
-    const data = await response.json();
+    // Burada özel fonksiyonumuzu çağırıyoruz
+    let text = await tryGenerateContent(prompt);
     
-    // Cevap kontrolü
-    if(!data.candidates || data.candidates.length === 0) {
-        throw new Error("Yapay zeka boş cevap döndü.");
-    }
-
-    let text = data.candidates[0].content.parts[0].text;
-
     // Temizlik
     text = text.replace(/```json/g, "").replace(/```/g, "").trim();
-
     return JSON.parse(text);
 
   } catch (error) {
-    console.error("Yapay Zeka Bağlantı Sorunu:", error);
-    alert(`Hata: ${error.message}`);
-    
-    // Uygulama çökmesin diye boş liste dönüyoruz
+    console.error("AI Hatası:", error);
+    alert("Yapay Zeka Hatası: " + error.message);
     return [];
+  }
+};
+
+// 2. Ajan Modu Konuşma Motoru
+export const sendMessageToAgent = async (systemPrompt, history, userMessage) => {
+  if (!genAI) return "API Anahtarı yok.";
+
+  // Ajan modu için en güvenilir olanı (gemini-pro) veya çalışan herhangi birini bulmamız lazım.
+  // Basitlik olsun diye burada direkt gemini-pro deniyoruz, çalışmazsa fallback yaparız.
+  // Ancak yukarıdaki mantığı buraya da uygulayalım:
+  
+  const chatHistory = history.map(msg => ({
+    role: msg.sender === 'bot' ? 'model' : 'user',
+    parts: [{ text: msg.text }]
+  }));
+
+  // Burası biraz daha karmaşık olduğu için tek tek deneme yapacağız
+  for (const modelName of MODEL_NAMES) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const chat = model.startChat({
+            history: [
+            { role: "user", parts: [{ text: `GÖREVİN: ${systemPrompt}. Anladıysan 'OK' de.` }] },
+            { role: "model", parts: [{ text: "OK" }] },
+            ...chatHistory
+            ],
+        });
+        const result = await chat.sendMessage(userMessage);
+        const response = await result.response;
+        return response.text();
+      } catch (e) {
+        if (modelName === MODEL_NAMES[MODEL_NAMES.length - 1]) return "Bağlantı hatası.";
+        continue;
+      }
   }
 };

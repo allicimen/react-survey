@@ -1,73 +1,98 @@
-/* styles/googleForms.css */
+/* src/styles/googleForms.css */
 
-/* İçeriği ortalayan ana kapsayıcı (Anket genişliği) */
+/* --- GENEL AYARLAR --- */
 .container {
-  max-width: 770px;
+  max-width: 800px;
   margin: 0 auto;
-  padding-top: 12px;
-  padding-bottom: 60px;
+  padding: 40px 20px;
 }
 
-/* Beyaz Kart Yapısı (Her soru bir karttır) */
+/* --- KART YAPISI (Results ve Preview sayfaları için) --- */
 .form-card {
-  background-color: var(--surface-color);
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  padding: 24px;
-  margin-bottom: 12px;
-  position: relative; /* İçindeki elementleri hizalamak için */
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
+  padding: 32px;
+  margin-bottom: 24px;
 }
 
-/* Anket Başlığının olduğu kartın üstündeki mor şerit */
+/* Başlık Kartı Süsü */
 .form-card.header-card {
-  border-top: 10px solid var(--primary-color);
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+  border-top: 6px solid #2563eb; /* Modern Mavi */
 }
 
-/* Google tarzı altı çizili input alanı */
+/* Başlıklar */
+h1 { font-size: 28px; font-weight: 600; color: #1e293b; margin-bottom: 8px; }
+h3 { font-size: 18px; font-weight: 500; color: #1e293b; margin-top: 0; }
+p { color: #64748b; line-height: 1.6; }
+
+/* --- INPUTLAR (Eski sayfalar için) --- */
 .input-text {
   width: 100%;
-  padding: 8px 0;
-  border: none;
-  border-bottom: 1px solid var(--border-color);
-  background: transparent;
-  outline: none;
-  font-size: 16px;
-  transition: border-bottom 0.3s ease;
+  padding: 12px 16px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #fff;
+  font-size: 15px;
+  margin-top: 8px;
+  box-sizing: border-box; /* Taşmayı önler */
 }
-
-/* Inputa tıklanınca alt çizgi mor olsun */
 .input-text:focus {
-  border-bottom: 2px solid var(--primary-color);
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-/* Ana Buton (Mor Buton) */
+/* --- BUTONLAR --- */
 .btn-primary {
-  background-color: var(--primary-color);
+  background-color: #2563eb;
   color: white;
   border: none;
-  padding: 10px 24px;
-  border-radius: 4px;
+  padding: 12px 28px;
+  border-radius: 8px;
+  font-weight: 500;
   cursor: pointer;
-  font-weight: bold;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none; /* Link olarak kullanılırsa altını çizme */
 }
-
 .btn-primary:hover {
-  background-color: var(--primary-hover);
+  background-color: #1d4ed8;
 }
 
-/* Sadece ikon olan butonlar (Çöp kutusu vb.) */
 .icon-btn {
-  background: none;
+  background: transparent;
   border: none;
   cursor: pointer;
   padding: 8px;
-  color: #5f6368;
-  font-size: 20px;
+  border-radius: 50%;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.icon-btn:hover {
+  background-color: #f1f5f9;
+  color: #1e293b;
 }
 
-.icon-btn:hover {
-  background-color: #f5f5f5;
+/* Animasyonlar */
+.typing-indicator {
+  padding: 10px;
+  display: flex;
+  gap: 4px;
+}
+.typing-dot {
+  width: 6px; height: 6px;
+  background: #94a3b8;
   border-radius: 50%;
+  animation: typing 1.4s infinite ease-in-out both;
+}
+.typing-dot:nth-child(1) { animation-delay: -0.32s; }
+.typing-dot:nth-child(2) { animation-delay: -0.16s; }
+@keyframes typing {
+  0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+  40% { transform: scale(1); opacity: 1; }
 }

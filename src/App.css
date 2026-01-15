@@ -1,34 +1,20 @@
-/* App.css */
+/* src/App.css */
 
-/* Genel Renk ve Ayar Tanımları */
-:root {
-  --primary-color: #673ab7; /* Google Forms Moru */
-  --primary-hover: #5e35b1;
-  --bg-color: #f0ebf8;      /* Açık Eflatun/Gri Arka Plan */
-  --surface-color: #ffffff; /* Kartların Beyaz Rengi */
-  --text-color: #202124;    /* Koyu Gri Yazı Rengi */
-  --border-color: #dadce0;  /* Gri Çerçeve Rengi */
-  --danger-color: #d93025;  /* Silme butonu için kırmızı */
+/* App.css artık sadeleştirildi. Tüm tema ayarları index.css'e taşındı. */
+
+/* Küçük ekranlarda taşmayı önle */
+#root {
+  width: 100%;
+  min-height: 100vh;
 }
 
-/* Tüm elementler için varsayılan sıfırlama */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-/* Sayfa geneli yazı tipi ve arka planı */
-body {
-  font-family: 'Roboto', Arial, sans-serif;
-  background-color: var(--bg-color);
-  color: var(--text-color);
-  font-size: 14px;
-  line-height: 1.5;
-}
-
-/* Linklerin alt çizgisini kaldır */
+/* Linklerin varsayılan stillerini temizle */
 a {
   text-decoration: none;
   color: inherit;
+  transition: color 0.2s;
+}
+
+a:hover {
+  color: var(--primary-color);
 }

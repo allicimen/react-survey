@@ -1,64 +1,94 @@
-/* services/dbService.js */
+// src/services/dbService.js
+import { db, auth } from "../firebase"; // <-- auth eklendi
+import { 
+  collection, 
+  doc, 
+  getDocs, 
+  getDoc, 
+  setDoc,
+  updateDoc, 
+  deleteDoc, 
+  arrayUnion,
+  query,  // <-- Sorgu oluşturmak için
+  where   // <-- Filtrelemek için
+} from "firebase/firestore";
 
-const STORAGE_KEY = 'survey_app_data';
+const COLLECTION_NAME = "surveys";
 
-// Tüm anketleri getirir
-export const getSurveys = () => {
-  const data = localStorage.getItem(STORAGE_KEY);
-  return data ? JSON.parse(data) : [];
-};
+// 1. Sadece GİRİŞ YAPAN KULLANICININ anketlerini getirir
+export const getSurveys = async () => {
+  try {
+    const user = auth.currentUser;
+    // Eğer kullanıcı giriş yapmamışsa veri gösterme (Boş dizi dön)
+    if (!user) return [];
 
-// Tek bir anketi ID'sine göre bulur
-export const getSurvey = (id) => {
-  const surveys = getSurveys();
-  return surveys.find(s => s.id === id);
-};
-
-// Anketi kaydeder veya günceller
-export const saveSurvey = (survey) => {
-  const surveys = getSurveys();
-  const existingIndex = surveys.findIndex(s => s.id === survey.id);
-
-  if (existingIndex >= 0) {
-    // Varsa güncelle
-    surveys[existingIndex] = survey;
-  } else {
-    // Yoksa yeni ekle
-    surveys.push(survey);
-  }
-
-  // Veriyi string'e çevirip kaydet
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(surveys));
-};
-
-// Anketi siler
-export const deleteSurvey = (id) => {
-  const surveys = getSurveys();
-  const newSurveys = surveys.filter(s => s.id !== id);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(newSurveys));
-};
-
-
-// Ankete yeni bir cevap ekler
-export const addResponseToSurvey = (surveyId, response) => {
-  const surveys = getSurveys();
-  const surveyIndex = surveys.findIndex(s => s.id === surveyId);
-
-  if (surveyIndex >= 0) {
-    // Eğer anketin henüz hiç cevabı yoksa boş dizi oluştur
-    if (!surveys[surveyIndex].responses) {
-      surveys[surveyIndex].responses = [];
-    }
+    // SORGULAMA: userId'si benim uid'me eşit olanları getir
+    const q = query(collection(db, COLLECTION_NAME), where("userId", "==", user.uid));
     
-    // Yeni cevabı ekle (Tarih bilgisiyle beraber)
-    surveys[surveyIndex].responses.push({
-      ...response,
-      submittedAt: new Date().toISOString()
-    });
-
-    // Kaydet
-    localStorage.setItem('survey_app_data', JSON.stringify(surveys));
-    return true;
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => doc.data());
+  } catch (error) {
+    console.error("Firebase veri çekme hatası:", error);
+    return [];
   }
-  return false;
+};
+
+// 2. Tek bir anketi ID'sine göre bulur
+export const getSurvey = async (id) => {
+  try {
+    const docRef = doc(db, COLLECTION_NAME, id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      return docSnap.data();
+    } else {
+      console.log("Anket bulunamadı!");
+      return null;
+    }
+  } catch (error) {
+    console.error("Anket getirme hatası:", error);
+    return null;
+  }
+};
+
+// 3. Anketi kaydeder (veya varsa günceller)
+// setDoc kullandığımız için ID aynıysa üzerine yazar (Update gibi çalışır)
+export const saveSurvey = async (survey) => {
+  try {
+    await setDoc(doc(db, COLLECTION_NAME, survey.id), survey);
+  } catch (error) {
+    console.error("Kaydetme hatası:", error);
+    throw error;
+  }
+};
+
+// 4. Güncelleme Fonksiyonu
+export const updateSurvey = saveSurvey;
+
+// 5. Anketi siler
+export const deleteSurvey = async (id) => {
+  try {
+    await deleteDoc(doc(db, COLLECTION_NAME, id));
+  } catch (error) {
+    console.error("Silme hatası:", error);
+  }
+};
+
+// 6. Ankete yeni bir cevap ekler
+export const addResponseToSurvey = async (surveyId, response) => {
+  try {
+    const surveyRef = doc(db, COLLECTION_NAME, surveyId);
+
+    // arrayUnion: Mevcut diziye yeni elemanı ekler
+    await updateDoc(surveyRef, {
+      responses: arrayUnion({
+        ...response,
+        submittedAt: new Date().toISOString()
+      })
+    });
+    return true;
+  } catch (error) {
+    console.error("Cevap ekleme hatası:", error);
+    return false;
+  }
 };

@@ -1,31 +1,22 @@
+// src/App.jsx
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import MainLayout from './layout/MainLayout'; // Çerçeve yapımız
-import routes from './routes'; // Rota listemiz
-import './App.css'; // Genel stiller
+import { Outlet } from 'react-router-dom';
+import Navbar from './components/Navbar';
+// import MainLayout from './layout/MainLayout'; // <-- Bunu silebilirsin, gerek kalmadı.
 
-function App() {
+const App = () => {
   return (
-    // 1. Uygulamayı Router ile sarmalıyoruz ki sayfalar arası geçiş çalışsın
-    <BrowserRouter>
+    // Fragment yerine div kullanabiliriz, CSS için sınıf verebiliriz
+    <div className="app-layout">
+      {/* Sabit Üst Menü */}
+      <Navbar /> 
       
-      {/* 2. Her sayfada sabit duracak Navbar için MainLayout kullanıyoruz */}
-      <MainLayout>
-        
-        {/* 3. URL değiştiğinde hangi sayfanın açılacağını burada belirliyoruz */}
-        <Routes>
-          {routes.map((route, index) => (
-            <Route 
-              key={index} 
-              path={route.path} 
-              element={route.element} 
-            />
-          ))}
-        </Routes>
-        
-      </MainLayout>
-    </BrowserRouter>
+      {/* Sayfaların değiştiği alan (Dinamik içerik) */}
+      <main style={{ minHeight: 'calc(100vh - 70px)' }}> 
+        <Outlet />
+      </main>
+    </div>
   );
-}
+};
 
 export default App;
