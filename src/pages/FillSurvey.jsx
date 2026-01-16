@@ -1,164 +1,250 @@
 // src/pages/FillSurvey.jsx
 import React from 'react';
 import useFillSurvey from '../hooks/useFillSurvey';
+import ChatInterface from '../components/ChatInterface'; // Yeni oluşturduğumuz bileşen
 
 const FillSurvey = () => {
   const {
     survey,
     isFinished,
     // Klasik Props
-    answers, handleAnswerChange, handleCheckboxChange, submitClassicSurvey,
+    answers, 
+    handleAnswerChange, 
+    handleCheckboxChange, 
+    submitClassicSurvey,
     // Ajan Props
-    messages, inputText, setInputText, isTyping, handleAgentSend, messagesEndRef
+    messages, 
+    inputText, 
+    setInputText, 
+    isTyping, 
+    handleAgentSend
   } = useFillSurvey();
 
-  if (!survey) return <div style={{textAlign:'center', marginTop:'50px'}}>Anket Yükleniyor...</div>;
-
-  // --- ORTAK BİTİŞ EKRANI ---
-  if (isFinished) {
+  // Yüklenme Durumu
+  if (!survey) {
     return (
-      <div style={{ maxWidth: '600px', margin: '50px auto', padding: '40px', textAlign: 'center', backgroundColor: '#ecfdf5', borderRadius: '16px', border: '1px solid #a7f3d0' }}>
-        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎉</div>
-        <h2 style={{ color: '#065f46', margin: '0 0 10px 0' }}>Teşekkürler!</h2>
-        <p style={{ color: '#047857' }}>Yanıtlarınız başarıyla kaydedildi.</p>
-        <button onClick={() => window.location.href = '/dashboard'} style={{ marginTop: '20px', padding: '10px 20px', background: '#059669', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}>Panele Dön</button>
+      <div style={{
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '100vh', 
+        fontFamily: "'Inter', sans-serif",
+        color: '#64748b'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div className="spinner" style={{ marginBottom: '10px' }}>⏳</div>
+          <p>Anket hazırlanıyor...</p>
+        </div>
       </div>
     );
   }
 
   // ==========================================================
-  // SENARYO 1: KLASİK LİSTE GÖRÜNÜMÜ (FORM)
+  // ORTAK BİTİŞ EKRANI (Her iki mod için de geçerli)
   // ==========================================================
-  if (survey.mode === 'classic') {
+  if (isFinished) {
     return (
-      <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px', fontFamily: "'Inter', sans-serif" }}>
-        
-        {/* Başlık Kartı */}
-        <div style={{ backgroundColor: 'white', padding: '32px', borderRadius: '16px', borderTop: '8px solid #2563eb', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', marginBottom: '24px' }}>
-            <h1 style={{ fontSize: '32px', margin: '0 0 10px 0', color: '#1e293b' }}>{survey.title}</h1>
-            <p style={{ fontSize: '16px', color: '#64748b', lineHeight: '1.5' }}>{survey.description}</p>
-        </div>
+      <div style={{ 
+        maxWidth: '500px', 
+        margin: '100px auto', 
+        padding: '40px', 
+        textAlign: 'center', 
+        backgroundColor: '#ffffff', 
+        borderRadius: '24px', 
+        boxShadow: '0 10px 25px -5px rgba(0,0,0,0.1)',
+        fontFamily: "'Inter', sans-serif"
+      }}>
+        <div style={{ fontSize: '64px', marginBottom: '20px' }}>✨</div>
+        <h2 style={{ color: '#1e293b', fontSize: '28px', marginBottom: '12px', fontWeight: '800' }}>
+          Harika!
+        </h2>
+        <p style={{ color: '#64748b', fontSize: '16px', lineHeight: '1.6', marginBottom: '30px' }}>
+          Katılımınız için teşekkür ederiz. Yanıtlarınız güvenle kaydedildi ve analiz edilmek üzere iletildi.
+        </p>
+        <button 
+          onClick={() => window.location.href = '/dashboard'} 
+          style={{ 
+            width: '100%',
+            padding: '16px', 
+            background: '#7c3aed', 
+            color: 'white', 
+            border: 'none', 
+            borderRadius: '14px', 
+            cursor: 'pointer',
+            fontWeight: '600',
+            fontSize: '16px',
+            transition: 'transform 0.2s'
+          }}
+        >
+          Panosuna Dön
+        </button>
+      </div>
+    );
+  }
 
-        {/* Sorular Listesi */}
+  // ==========================================================
+  // MOD SEÇİMİ VE RENDER MANTIĞI
+  // ==========================================================
+
+  // DURUM A: AI AJAN MODU
+  if (survey.mode === 'agent') {
+    return (
+      <ChatInterface 
+        messages={messages}
+        inputText={inputText}
+        setInputText={setInputText}
+        isTyping={isTyping}
+        handleAgentSend={handleAgentSend}
+        surveyTitle={survey.title}
+      />
+    );
+  }
+
+  // DURUM B: KLASİK LİSTE MODU
+  return (
+    <div style={{ 
+      maxWidth: '800px', 
+      margin: '0 auto', 
+      padding: '40px 20px', 
+      fontFamily: "'Inter', sans-serif",
+      backgroundColor: '#f8fafc',
+      minHeight: '100vh'
+    }}>
+      
+      {/* Başlık Kartı */}
+      <div style={{ 
+        backgroundColor: 'white', 
+        padding: '32px', 
+        borderRadius: '20px', 
+        borderTop: '10px solid #2563eb', 
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)', 
+        marginBottom: '30px' 
+      }}>
+          <h1 style={{ fontSize: '32px', fontWeight: '800', margin: '0 0 12px 0', color: '#1e293b' }}>
+            {survey.title}
+          </h1>
+          {survey.description && (
+            <p style={{ fontSize: '16px', color: '#64748b', lineHeight: '1.6', margin: 0 }}>
+              {survey.description}
+            </p>
+          )}
+      </div>
+
+      {/* Sorular Listesi */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
         {survey.questions && survey.questions.map((q, index) => {
             
-            // Özel Elementler (Header, Image, Video)
-            if (q.type === 'header') return <h2 key={q.id} style={{margin:'30px 0 15px 0', color:'#334155'}}>{q.text}</h2>;
-            if (q.type === 'image') return <img key={q.id} src={q.text} alt="Survey Img" style={{maxWidth:'100%', borderRadius:'8px', marginBottom:'20px'}} />;
-            if (q.type === 'video') return null; // Video şimdilik pas geçildi
+            // Özel Elementler
+            if (q.type === 'header') return <h2 key={q.id} style={{ margin: '20px 0 10px 5px', color: '#334155', fontSize: '22px' }}>{q.text}</h2>;
+            if (q.type === 'image') return <img key={q.id} src={q.text} alt="Anket Görseli" style={{ maxWidth: '100%', borderRadius: '12px', marginBottom: '10px' }} />;
+            if (q.type === 'video') return null;
 
             return (
-                <div key={q.id} style={{ backgroundColor: 'white', padding: '24px', borderRadius: '12px', marginBottom: '16px', border: '1px solid #e2e8f0' }}>
-                    <div style={{ fontSize: '16px', fontWeight: '600', marginBottom: '16px', color: '#1e293b' }}>
-                        {index + 1}. {q.text}
+                <div key={q.id} style={{ 
+                  backgroundColor: 'white', 
+                  padding: '28px', 
+                  borderRadius: '16px', 
+                  border: '1px solid #e2e8f0',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                }}>
+                    <div style={{ fontSize: '17px', fontWeight: '700', marginBottom: '20px', color: '#1e293b', display: 'flex', gap: '8px' }}>
+                        <span style={{ color: '#2563eb' }}>{index + 1}.</span>
+                        {q.text}
                     </div>
 
-                    {/* Metin Cevap */}
+                    {/* Metin Yanıtı */}
                     {(q.type === 'text' || q.type === 'paragraph') && (
                         <input 
                             type="text" 
-                            placeholder="Yanıtınız..." 
+                            placeholder="Buraya yazın..." 
                             onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                            style={{ width: '100%', padding: '12px', border: '1px solid #cbd5e1', borderRadius: '8px', outline: 'none', boxSizing: 'border-box' }}
+                            style={{ 
+                              width: '100%', 
+                              padding: '14px', 
+                              border: '1px solid #cbd5e1', 
+                              borderRadius: '10px', 
+                              outline: 'none', 
+                              boxSizing: 'border-box',
+                              fontSize: '15px'
+                            }}
                         />
                     )}
 
-                    {/* Çoktan Seçmeli (Radio) */}
-                    {q.type === 'multipleChoice' && q.options.map((opt, i) => (
-                        <label key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', cursor: 'pointer' }}>
-                            <input 
-                                type="radio" 
-                                name={`q_${q.id}`} 
-                                value={opt} 
-                                onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                            />
-                            <span style={{color: '#475569'}}>{opt}</span>
-                        </label>
-                    ))}
+                    {/* Çoktan Seçmeli */}
+                    {q.type === 'multipleChoice' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {q.options.map((opt, i) => (
+                          <label key={i} style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '12px', 
+                            padding: '12px 16px', 
+                            borderRadius: '10px',
+                            border: '1px solid #f1f5f9',
+                            backgroundColor: '#f8fafc',
+                            cursor: 'pointer' 
+                          }}>
+                              <input 
+                                  type="radio" 
+                                  name={`q_${q.id}`} 
+                                  value={opt} 
+                                  onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                                  style={{ width: '18px', height: '18px', accentColor: '#2563eb' }}
+                              />
+                              <span style={{ color: '#475569', fontSize: '15px' }}>{opt}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
 
-                    {/* Onay Kutuları (Checkbox) */}
-                    {q.type === 'checkbox' && q.options.map((opt, i) => (
-                        <label key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 0', cursor: 'pointer' }}>
-                            <input 
-                                type="checkbox" 
-                                value={opt} 
-                                onChange={() => handleCheckboxChange(q.id, opt)}
-                            />
-                            <span style={{color: '#475569'}}>{opt}</span>
-                        </label>
-                    ))}
+                    {/* Onay Kutuları */}
+                    {q.type === 'checkbox' && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                        {q.options.map((opt, i) => (
+                          <label key={i} style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '12px', 
+                            padding: '12px 16px', 
+                            borderRadius: '10px',
+                            border: '1px solid #f1f5f9',
+                            backgroundColor: '#f8fafc',
+                            cursor: 'pointer' 
+                          }}>
+                              <input 
+                                  type="checkbox" 
+                                  value={opt} 
+                                  onChange={() => handleCheckboxChange(q.id, opt)}
+                                  style={{ width: '18px', height: '18px', accentColor: '#2563eb' }}
+                              />
+                              <span style={{ color: '#475569', fontSize: '15px' }}>{opt}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
                 </div>
             );
         })}
-
-        <button 
-            onClick={submitClassicSurvey}
-            style={{ backgroundColor: '#2563eb', color: 'white', border: 'none', padding: '16px 32px', fontSize: '16px', fontWeight: '600', borderRadius: '8px', cursor: 'pointer', marginTop: '20px' }}
-        >
-            Anketi Gönder
-        </button>
-      </div>
-    );
-  }
-
-  // ==========================================================
-  // SENARYO 2: AI AJAN GÖRÜNÜMÜ (SOHBET)
-  // ==========================================================
-  return (
-    <div style={{ maxWidth: '700px', margin: '0 auto', height: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: '#f3f4f6' }}>
-      
-      {/* ÜST BİLGİ */}
-      <div style={{ padding: '16px', backgroundColor: 'white', borderBottom: '1px solid #e5e7eb', textAlign: 'center' }}>
-         <h2 style={{ margin: 0, fontSize: '18px', color: '#111827' }}>{survey.title}</h2>
-         <span style={{fontSize:'12px', color:'#7c3aed', fontWeight:'600'}}>AI Asistan Modu</span>
       </div>
 
-      {/* SOHBET ALANI */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        {messages.map((msg, index) => (
-          <div key={index} style={{
-            display: 'flex',
-            justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start'
-          }}>
-            <div style={{
-              maxWidth: '80%', padding: '14px 20px', 
-              borderRadius: '18px',
-              borderBottomLeftRadius: msg.sender === 'bot' ? '4px' : '18px',
-              borderBottomRightRadius: msg.sender === 'user' ? '4px' : '18px',
-              backgroundColor: msg.sender === 'bot' ? '#ffffff' : '#7c3aed', 
-              color: msg.sender === 'bot' ? '#1f2937' : '#ffffff',
-              boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
-              lineHeight: '1.5'
-            }}>
-              {msg.text}
-            </div>
-          </div>
-        ))}
-
-        {isTyping && <div style={{padding:'10px', color:'#6b7280', fontStyle:'italic'}}>Ajan yazıyor...</div>}
-        <div ref={messagesEndRef} />
-      </div>
-
-      {/* INPUT ALANI */}
-      <div style={{ padding: '20px', backgroundColor: '#fff', borderTop: '1px solid #e5e7eb', display: 'flex', gap: '10px' }}>
-        <input
-            type="text"
-            placeholder="Mesajınızı yazın..."
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleAgentSend()}
-            disabled={isTyping} 
-            autoFocus
-            style={{ flex: 1, padding: '14px', borderRadius: '12px', border: '1px solid #e5e7eb', outline: 'none', backgroundColor: '#f9fafb' }}
-        />
-        <button 
-            onClick={handleAgentSend} 
-            disabled={isTyping}
-            style={{ padding: '0 24px', backgroundColor: '#7c3aed', color: 'white', border: 'none', borderRadius: '12px', fontWeight: '600', cursor: 'pointer' }}
-        >
-            Gönder
-        </button>
-      </div>
+      <button 
+          onClick={submitClassicSurvey}
+          style={{ 
+            width: '100%',
+            backgroundColor: '#2563eb', 
+            color: 'white', 
+            border: 'none', 
+            padding: '18px', 
+            fontSize: '16px', 
+            fontWeight: '700', 
+            borderRadius: '12px', 
+            cursor: 'pointer', 
+            marginTop: '30px',
+            boxShadow: '0 4px 12px rgba(37,99,235,0.2)'
+          }}
+      >
+          Yanıtları Gönder
+      </button>
     </div>
   );
 };

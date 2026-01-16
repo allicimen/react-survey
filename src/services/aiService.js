@@ -1,43 +1,33 @@
 // src/services/aiService.js
-
 const API_URL = "http://localhost:5000/api";
 
-/**
- * Anket sorularını backend üzerinden üretir
- */
 export const generateQuestionsAI = async (userPrompt) => {
   const response = await fetch(`${API_URL}/generate`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ prompt: userPrompt }),
   });
-
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "AI isteği başarısız");
-  }
-
+  if (!response.ok) throw new Error("AI isteği başarısız");
   return await response.json();
 };
 
-/**
- * (İleride) Ajan modu için backend endpoint
- * Şimdilik pasif ama mimari hazır
- */
-export const sendMessageToAgent = async (payload) => {
+export const sendMessageToAgent = async (systemPrompt, history, message) => {
   const response = await fetch(`${API_URL}/agent`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ systemPrompt, history, message }),
   });
+  if (!response.ok) throw new Error("Agent isteği başarısız");
+  const data = await response.json();
+  return data.reply; // Sadece reply metnini döner
+};
 
-  if (!response.ok) {
-    throw new Error("Agent isteği başarısız");
-  }
-
+export const extractSurveyData = async (history) => {
+  const response = await fetch(`${API_URL}/extract-data`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ history }),
+  });
+  if (!response.ok) throw new Error("Veri ayıklama başarısız");
   return await response.json();
 };
