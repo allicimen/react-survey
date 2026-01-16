@@ -55,8 +55,6 @@ const ModernBackButton = ({ onClick, text, isMobile }) => {
 
 const CreateSurvey = () => {
   const navigate = useNavigate();
-
-  // MOBİL KONTROLÜ (Sihirli Kısım)
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   useEffect(() => {
@@ -65,7 +63,6 @@ const CreateSurvey = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // YENİ STATE: Prompt Input için
   const [aiPromptInput, setAiPromptInput] = useState("");
 
   const {
@@ -79,7 +76,6 @@ const CreateSurvey = () => {
 
   useEffect(() => { window.scrollTo(0, 0); }, []);
 
-  // --- ADIM 1: SEÇİM EKRANI ---
   if (step === 1) {
     return (
       <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
@@ -108,11 +104,9 @@ const CreateSurvey = () => {
     );
   }
 
-  // --- ADIM 2: EDİTÖR ---
   return (
-    <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', paddingBottom: isMobile ? '120px' : '100px', fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ backgroundColor: '#f8fafc', minHeight: '100vh', paddingBottom: isMobile ? '100px' : '50px', fontFamily: "'Inter', sans-serif", overflowX: 'hidden' }}>
       
-      {/* ÜST BAR */}
       <div style={{ position: 'sticky', top: 0, zIndex: 100, backgroundColor: 'rgba(255,255,255,0.9)', borderBottom: '1px solid #e2e8f0', padding: '16px 0', backdropFilter:'blur(5px)' }}>
         <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: isMobile ? '0 15px' : '0 20px' }}>
           <div style={{display:'flex', gap:'15px', alignItems:'center', flex: 1}}>
@@ -136,7 +130,6 @@ const CreateSurvey = () => {
 
       <div style={{ maxWidth: '1000px', margin: isMobile ? '15px auto' : '30px auto', padding: isMobile ? '0 10px' : '0 24px' }}>
         
-        {/* Ortak Başlık Alanı */}
         <div style={{ backgroundColor: 'white', padding: isMobile ? '20px' : '40px', borderRadius: '16px', marginBottom: '24px', border: '1px solid #e2e8f0' }}>
             <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Anket Başlığı" style={{ width: '100%', fontSize: isMobile ? '24px' : '32px', fontWeight: '800', border: 'none', outline: 'none', marginBottom:'10px', color:'#1e293b' }} />
             <input type="text" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Anket açıklaması (isteğe bağlı)" style={{ width: '100%', fontSize: '16px', border: 'none', outline: 'none', color:'#64748b' }} />
@@ -145,8 +138,6 @@ const CreateSurvey = () => {
         {mode === 'classic' && (
             <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: '40px', alignItems: 'flex-start' }}>
                 <div style={{ flex: 1, width: '100%' }}>
-                    
-                    {/* YENİ AI PROMPT ALANI - MOBİL UYUMLU */}
                     <div style={{marginBottom:'24px', padding:'20px', background:'white', borderRadius:'12px', border:'1px solid #e2e8f0', boxShadow:'0 2px 4px rgba(0,0,0,0.02)'}}>
                         <div style={{display:'flex', alignItems:'center', gap:'8px', marginBottom:'12px', color:'#2563eb', fontWeight:'600'}}>
                             <span>✨ Yapay Zeka ile Üret</span>
@@ -154,7 +145,7 @@ const CreateSurvey = () => {
                         <div style={{display:'flex', flexDirection: isMobile ? 'column' : 'row', gap:'10px'}}>
                             <input 
                                 type="text" 
-                                placeholder="Örn: Müşteri memnuniyeti için 5 soru hazırla..." 
+                                placeholder="Örn: Müşteri memnuniyeti..." 
                                 value={aiPromptInput}
                                 onChange={(e) => setAiPromptInput(e.target.value)}
                                 style={{ flex: 1, padding:'12px', borderRadius:'8px', border:'1px solid #cbd5e1', outline:'none', width: '100%' }}
@@ -165,7 +156,7 @@ const CreateSurvey = () => {
                                 disabled={isLoading} 
                                 style={{background:'#eff6ff', color:'#2563eb', border:'1px solid #bfdbfe', padding:'12px 20px', borderRadius:'8px', cursor:'pointer', fontWeight:'600', width: isMobile ? '100%' : 'auto'}}
                             >
-                                {isLoading ? "Üretiliyor..." : "Üret"}
+                                {isLoading ? "..." : "Üret"}
                             </button>
                         </div>
                     </div>
@@ -180,19 +171,30 @@ const CreateSurvey = () => {
                     </div>
                 </div>
 
-                {/* SİHİRLİ DOKUNUŞ: Mobilde Alt Menü, Masaüstünde Sağ Menü */}
+                {/* ARAÇ ÇUBUĞU MANTĞI */}
                 {isMobile ? (
                     <div style={{
                         position: 'fixed', bottom: 0, left: 0, right: 0, 
                         backgroundColor: 'white', borderTop: '1px solid #e2e8f0', 
-                        padding: '10px 20px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', 
-                        zIndex: 1000, boxShadow: '0 -4px 10px rgba(0,0,0,0.05)'
+                        padding: '12px 5px', display: 'flex', justifyContent: 'space-around', alignItems: 'center', 
+                        zIndex: 1000, boxShadow: '0 -4px 10px rgba(0,0,0,0.08)'
                     }}>
-                        <div style={{ transform: 'scale(0.9)' }} title="Soru Ekle"><AddQuestionButton onClick={addQuestion} /></div>
-                        <div style={{ width: '1px', height: '24px', backgroundColor: '#e2e8f0' }}></div>
-                        <button onClick={() => addSpecialElement('image')} title="Resim Ekle" style={sideButtonStyle}>🖼️</button>
-                        <button onClick={() => addSpecialElement('video')} title="Video Ekle" style={sideButtonStyle}>🎥</button>
-                        <button onClick={() => addSpecialElement('header')} title="Metin Ekle" style={sideButtonStyle}>Tt</button>
+                        <div style={toolbarItemStyle} onClick={addQuestion}>
+                            <div style={iconCircleStyle}><span style={{fontSize:'14px', fontWeight:'700'}}>+</span></div>
+                            <span style={toolbarLabelStyle}>Soru Ekle</span>
+                        </div>
+                        <div style={toolbarItemStyle} onClick={() => addSpecialElement('image')}>
+                            <div style={iconCircleStyle}><span style={{fontSize:'18px'}}>🖼️</span></div>
+                            <span style={toolbarLabelStyle}>Resim Ekle</span>
+                        </div>
+                        <div style={toolbarItemStyle} onClick={() => addSpecialElement('video')}>
+                            <div style={iconCircleStyle}><span style={{fontSize:'18px'}}>🎥</span></div>
+                            <span style={toolbarLabelStyle}>Video Ekle</span>
+                        </div>
+                        <div style={toolbarItemStyle} onClick={() => addSpecialElement('header')}>
+                            <div style={iconCircleStyle}><span style={{fontSize:'16px', fontWeight:'700'}}>Tt</span></div>
+                            <span style={toolbarLabelStyle}>Metin Ekle</span>
+                        </div>
                     </div>
                 ) : (
                     <div style={{ position: 'sticky', top: '100px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -207,13 +209,10 @@ const CreateSurvey = () => {
 
         {mode === 'agent' && (
             <div style={{ backgroundColor: 'white', padding: isMobile ? '20px' : '40px', borderRadius: '16px', border: '1px solid #e2e8f0', textAlign:'center' }}>
-                <div style={{fontSize: isMobile ? '40px' : '60px', marginBottom:'20px'}}>💬</div>
-                <h2 style={{color:'#1e293b', marginBottom:'10px'}}>Yapay Zekayı Görevlendir</h2>
-                <p style={{color:'#64748b', marginBottom:'30px', maxWidth:'600px', margin:'0 auto'}}>Kullanıcıyla nasıl konuşması gerektiğini yaz.</p>
                 <textarea 
                     value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)}
-                    placeholder="Örnek: Sen bir ürün yöneticisisin. Kullanıcıya ürünümüz hakkındaki deneyimlerini sor..."
-                    style={{ width:'100%', height:'200px', padding:'20px', borderRadius:'12px', border:'2px solid #e2e8f0', fontSize:'16px', outline:'none' }}
+                    placeholder="AI talimatlarını yazın..."
+                    style={{ width:'100%', height:'250px', padding:'20px', borderRadius:'12px', border:'2px solid #e2e8f0', fontSize:'16px', outline:'none' }}
                 />
             </div>
         )}
@@ -222,13 +221,10 @@ const CreateSurvey = () => {
   );
 };
 
-const selectionCardStyle = {
-    flex: '1', minWidth: '300px', backgroundColor: 'white', padding: '40px', borderRadius: '24px',
-    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '2px solid #e2e8f0', cursor: 'pointer', 
-    display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center'
-};
-const sideButtonStyle = {
-    width:'44px', height:'44px', borderRadius:'50%', border:'1px solid #e2e8f0', background:'white', cursor:'pointer', fontSize:'18px', display:'flex', alignItems:'center', justifyContent:'center', color:'#64748b'
-};
+const selectionCardStyle = { flex: '1', minWidth: '300px', backgroundColor: 'white', padding: '40px', borderRadius: '24px', border: '2px solid #e2e8f0', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' };
+const sideButtonStyle = { width:'44px', height:'44px', borderRadius:'50%', border:'1px solid #e2e8f0', background:'white', cursor:'pointer', fontSize:'18px', display:'flex', alignItems:'center', justifyContent:'center', color:'#64748b' };
+const toolbarItemStyle = { display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', cursor: 'pointer', minWidth:'70px' };
+const iconCircleStyle = { width: '45px', height: '45px', borderRadius: '50%', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white' };
+const toolbarLabelStyle = { fontSize: '10px', fontWeight: '700', color: '#64748b', textAlign:'center' };
 
 export default CreateSurvey;
