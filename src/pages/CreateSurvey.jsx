@@ -9,7 +9,7 @@ import SurveyImage from '../components/SurveyImage';
 import SurveyVideo from '../components/SurveyVideo';
 
 // Mantık Hook'u
-import useCreateSurvey from '../hooks/useCreateSurvey';
+import {useCreateSurvey} from '../hooks/useCreateSurvey';
 
 // İkonlar
 const ClassicModeIcon = () => (

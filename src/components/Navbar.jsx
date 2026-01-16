@@ -20,7 +20,6 @@ const Navbar = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false); 
   
-  // 👇 YENİ: Mobil kontrolü
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
   // Görünürlük Kontrolü
@@ -30,7 +29,6 @@ const Navbar = () => {
   const isRegisterPage = location.pathname === '/register';
   const isCreatePage = location.pathname === '/create'; 
 
-  // Ekran boyutu değişirse state'i güncelle
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener('resize', handleResize);
@@ -84,15 +82,6 @@ const Navbar = () => {
     }
   };
 
-  const handleImportClick = () => {
-    alert("Firebase modunda toplu veri yükleme özelliği geçici olarak devre dışıdır.");
-    setIsSettingsOpen(false);
-  };
-
-  const handleFileChange = (e) => {
-     // Import pasif
-  };
-
   // --- PROFİL İŞLEMLERİ ---
   const handleNameChange = async () => {
     const newName = prompt("Yeni isminizi giriniz:", userName);
@@ -129,7 +118,6 @@ const Navbar = () => {
   // --- STİLLER ---
   const navStyle = {
     backgroundColor: 'var(--nav-bg)',
-    // 👇 Mobilde paddingi azalttık
     padding: isMobile ? '0 12px' : '0 24px', 
     height: '70px',
     borderBottom: '1px solid var(--border-color)',
@@ -140,7 +128,7 @@ const Navbar = () => {
 
   const navButtonStyle = {
     display: 'flex', alignItems: 'center', gap: '8px', 
-    padding: isMobile ? '8px' : '8px 16px', // Mobilde padding az
+    padding: isMobile ? '8px' : '8px 16px', 
     borderRadius: '8px', textDecoration: 'none', fontSize: '14px', fontWeight: '500',
     color: 'var(--text-secondary)',
     transition: 'all 0.2s ease', cursor: 'pointer', userSelect: 'none'
@@ -165,11 +153,8 @@ const Navbar = () => {
 
   return (
     <nav style={navStyle}>
-      <input type="file" ref={fileInputRef} style={{ display: 'none' }} accept=".json" onChange={handleFileChange} />
-
       <Link to={isCustomerView ? "#" : "/dashboard"} style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '12px', textDecoration:'none' }}>
         <Logo />
-        {/* Mobilde başlığı biraz küçültelim */}
         <span style={{ fontSize: isMobile ? '18px' : '20px', fontWeight:'700', color: 'var(--text-main)', letterSpacing: '-0.5px' }}>
           AI Survey
         </span>
@@ -178,18 +163,15 @@ const Navbar = () => {
       {!isCustomerView && (
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '4px' : '12px' }}>
             
-           {/* PANELİM */}
            <Link to="/dashboard" style={{
                ...navButtonStyle, 
                backgroundColor: location.pathname === '/dashboard' ? 'var(--bg-hover)' : 'transparent',
                color: location.pathname === '/dashboard' ? 'var(--primary-color)' : 'var(--text-secondary)'
            }}>
              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-             {/* 👇 Mobilde yazıyı gizle */}
              {!isMobile && <span>Panelim</span>}
            </Link>
            
-           {/* AYARLAR BUTONU */}
            <div style={{ position: 'relative' }}>
              <div onClick={() => { setIsSettingsOpen(!isSettingsOpen); setIsProfileOpen(false); }}
                style={{
@@ -198,14 +180,13 @@ const Navbar = () => {
                    color: isSettingsOpen ? 'var(--text-main)' : 'var(--text-secondary)'
                }}>
                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.18-.08a2 2 0 0 0-2 0l-.45.45a2 2 0 0 0 0 2l.08.18a2 2 0 0 1 0 2l-.25.43a2 2 0 0 1-1.73 1l-.18.2V12.22a2 2 0 0 0 2 2h.18a2 2 0 0 1 1.73 1l.25.43a2 2 0 0 1 0 2l.08.18a2 2 0 0 0 2 0l.45.45a2 2 0 0 0 2 0l.18.08a2 2 0 0 1 0 2l.43.25a2 2 0 0 1 1 1.73V22h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.18.08a2 2 0 0 0 2 0l.45-.45a2 2 0 0 0 0-2l-.08-.18a2 2 0 0 1 0-2l.25-.43a2 2 0 0 1 1.73-1l.18-.2V11.78a2 2 0 0 0-2-2h-.18a2 2 0 0 1-1.73-1l-.25-.43a2 2 0 0 1 0-2l-.08-.18a2 2 0 0 0-2 0l-.45-.45a2 2 0 0 0-2 0l-.18-.08a2 2 0 0 1 0-2l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-               {/* 👇 Mobilde yazıyı gizle */}
                {!isMobile && <span>Ayarlar</span>}
              </div>
 
              {isSettingsOpen && (
                <div style={dropdownStyle}>
                  <div onClick={toggleTheme} style={menuItemStyle} onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                   {theme === 'light' ? '🌙 Karanlık Mod' : '☀️ Aydınlık Mod'}
+                   {theme === 'light' ? 'Karanlık Mod' : 'Aydınlık Mod'}
                  </div>
                  <div style={{ height: '1px', backgroundColor: 'var(--border-color)', margin: '4px 0' }}></div>
                  <div 
@@ -216,38 +197,31 @@ const Navbar = () => {
                  >
                    {isExporting ? 'İndiriliyor...' : 'Verileri İndir'}
                  </div>
-                 <div onClick={handleImportClick} style={menuItemStyle} onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
-                   Veri Yükle
-                 </div>
                </div>
              )}
            </div>
 
            <div style={{ width: '1px', height: '24px', backgroundColor: 'var(--border-color)', margin: '0 8px' }}></div>
            
-           {/* PROFİL */}
            <div style={{ position: 'relative' }}>
              <div onClick={() => { setIsProfileOpen(!isProfileOpen); setIsSettingsOpen(false); }}
                style={{display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', padding: '4px 8px', borderRadius: '8px', transition: '0.2s', backgroundColor: isProfileOpen ? 'var(--bg-hover)' : 'transparent', userSelect: 'none'}}>
                <div style={{width:'36px', height:'36px', borderRadius:'50%', background:'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)', color:'white', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'14px', fontWeight:'600'}}>
                  {getInitials(userName)}
                </div>
-               
-               {/* 👇 Mobilde İsim ve Admin yazısını GİZLE, sadece Avatar kalsın */}
                {!isMobile && (
                    <div style={{ display: 'flex', flexDirection: 'column' }}>
                      <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-main)' }}>{userName}</span>
                      <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>Admin</span>
                    </div>
                )}
-               
                <span style={{ fontSize: '10px', color: 'var(--text-secondary)', marginLeft: '4px' }}>▼</span>
              </div>
 
              {isProfileOpen && (
                <div style={dropdownStyle}>
                  <div style={{padding:'10px', borderBottom:'1px solid #eee', fontWeight:'bold', color:'#2563eb', fontSize:'13px'}}>
-                    {userName} {/* İsim mobilde burada görünsün */}
+                    {userName}
                  </div>
                  <div onClick={handleNameChange} style={menuItemStyle} onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--bg-hover)'} onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}>
                    İsim Değiştir

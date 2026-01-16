@@ -2,15 +2,15 @@
 import { useState, useEffect } from 'react';
 import { generateID } from '../utils/idGenerator';
 import { saveSurvey, getSurvey, updateSurvey } from '../services/dbService'; 
-import { generateQuestionsAI } from '../services/aiService';
 import { useNavigate, useParams } from 'react-router-dom';
-import { auth } from '../firebase'; // <-- Kullanıcıyı tanımak için
+import { auth } from '../firebase';
+// YENİ: aiService'den fonksiyonu import ediyoruz
+import { generateQuestionsAI } from '../services/aiService';
 
-const useCreateSurvey = () => {
+export const useCreateSurvey = () => {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // State'ler
   const [step, setStep] = useState(1); 
   const [title, setTitle] = useState("Adsız Anket");
   const [description, setDescription] = useState("");
@@ -20,25 +20,19 @@ const useCreateSurvey = () => {
   const [questions, setQuestions] = useState([
     { id: generateID(), text: "", type: "text", options: ["Seçenek 1"] }
   ]);
-
   const [isEditMode, setIsEditMode] = useState(false);
   const [existingResponsesCount, setExistingResponsesCount] = useState(0);
 
-  // 1. Verileri Yükle (Düzenleme Modu İçin)
   useEffect(() => {
     if (id) {
       const loadSurvey = async () => {
         const surveyToEdit = await getSurvey(id);
         if (surveyToEdit) {
-          
-          // GÜVENLİK KONTROLÜ: 
-          // Anketin bir sahibi varsa ve o kişi ben değilsem -> Panele at.
           if (auth.currentUser && surveyToEdit.userId && surveyToEdit.userId !== auth.currentUser.uid) {
             alert("Bu anketi düzenleme yetkiniz yok.");
             navigate('/dashboard');
             return;
           }
-
           setIsEditMode(true);
           setTitle(surveyToEdit.title);
           setDescription(surveyToEdit.description);
@@ -85,6 +79,7 @@ const useCreateSurvey = () => {
     setQuestions(prev => prev.filter(q => q.id !== id));
   };
 
+  // --- GÜNCELLENEN handleAIGenerate ---
   const handleAIGenerate = async (userPrompt) => {
       if (!userPrompt || userPrompt.trim() === "") {
         alert("Lütfen yapay zekaya ne üretmesi gerektiğini söyleyin.");
@@ -92,28 +87,32 @@ const useCreateSurvey = () => {
       }
       setIsLoading(true);
       try {
+        // Doğrudan fetch yerine oluşturduğumuz servisi çağırıyoruz
         const aiQuestions = await generateQuestionsAI(userPrompt);
         
         if (aiQuestions && aiQuestions.length > 0) {
-            const formattedQuestions = aiQuestions.map(q => ({ ...q, id: generateID() }));
+            const formattedQuestions = aiQuestions.map(q => ({ 
+                ...q, 
+                id: generateID(),
+                // Eğer AI options dönmezse varsayılan değer atıyoruz
+                options: q.options && q.options.length > 0 ? q.options : ["Seçenek 1"] 
+            }));
+            // Mevcut soruların üzerine ekle
             setQuestions(prev => [...prev, ...formattedQuestions]);
         }
       } catch (error) {
         console.error("AI Hatası:", error);
-        alert("Üretim sırasında bir hata oluştu.");
+        alert(error.message || "Üretim sırasında bir hata oluştu.");
       } finally {
         setIsLoading(false);
       }
   };
 
-  // 2. KAYDETME İŞLEMİ
   const handleSave = async () => {
     if (!title || title.trim() === "") {
       alert("Anket başlığı boş olamaz!");
       return;
     }
-
-    // Kullanıcı Kontrolü
     const user = auth.currentUser;
     if (!user) {
       alert("Oturum süreniz dolmuş, lütfen tekrar giriş yapın.");
@@ -121,44 +120,12 @@ const useCreateSurvey = () => {
       return;
     }
 
-    if (mode === 'agent' && !systemPrompt.trim()) {
-        alert("Lütfen yapay zeka için bir görev tanımı yazın.");
-        return;
-    }
-
-    let finalCreatedAt = new Date().toISOString();
-    let finalResponses = [];
-    let userId = user.uid; // Varsayılan olarak benim ID'm
-
-    if (isEditMode) {
-        try {
-            const originalSurvey = await getSurvey(id);
-            if (!originalSurvey) {
-                navigate('/dashboard');
-                return;
-            }
-            finalCreatedAt = originalSurvey.createdAt;
-            finalResponses = originalSurvey.responses || [];
-            // Eğer düzenliyorsak ve anketin zaten bir sahibi varsa onu koru
-            userId = originalSurvey.userId || user.uid; 
-
-            if (existingResponsesCount > 0) {
-                const confirmUpdate = window.confirm(`Bu ankete ${existingResponsesCount} yanıt verilmiş. Güncellemek istiyor musun?`);
-                if (!confirmUpdate) return;
-            }
-        } catch (error) {
-            console.error("Orijinal anket yüklenemedi:", error);
-            return;
-        }
-    }
-
     const surveyData = {
       id: isEditMode ? id : generateID(),
-      userId: userId, // <-- ARTIK SAHİBİ BELLİ
+      userId: user.uid,
       title,
       description,
-      createdAt: finalCreatedAt,
-      responses: finalResponses,
+      createdAt: isEditMode ? null : new Date().toISOString(), // dbService update'de koruyacaktır
       mode: mode, 
       questions: mode === 'classic' ? questions : [],
       systemPrompt: mode === 'agent' ? systemPrompt : null
@@ -172,7 +139,7 @@ const useCreateSurvey = () => {
         }
         navigate('/dashboard');
     } catch (error) {
-        console.error("Kayıt işlemi sırasında hata:", error);
+        console.error("Kayıt hatası:", error);
         alert("Anket kaydedilirken bir sorun oluştu.");
     }
   };

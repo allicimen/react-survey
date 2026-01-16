@@ -25,4 +25,6 @@ dist-ssr
 
 learning codes/
 .env
+backend/.env
+**/.env
 
