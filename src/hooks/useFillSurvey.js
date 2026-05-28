@@ -1,6 +1,6 @@
 // src/hooks/useFillSurvey.js
 import { useState, useEffect, useRef } from 'react';
-import { getSurvey, addResponseToSurvey } from '../services/dbService';
+import { getSurvey, submitResponse } from '../services/dbService';
 import { sendMessageToAgent, extractSurveyData } from '../services/aiService';
 import { useParams } from 'react-router-dom';
 
@@ -13,6 +13,7 @@ const useFillSurvey = () => {
   const [inputText, setInputText] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0); // <-- Adım takibi eklendi
 
   const hasGreeted = useRef(false);
 
@@ -28,6 +29,7 @@ const useFillSurvey = () => {
       }
     };
     fetchSurvey();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const startAgentConversation = async (systemPrompt) => {
@@ -35,7 +37,7 @@ const useFillSurvey = () => {
     try {
       const reply = await sendMessageToAgent(systemPrompt, [], "Merhaba, anketi başlat.");
       processBotReply(reply);
-    } catch (e) {
+    } catch {
       addBotMessage("Merhaba! Sizinle anket için sohbet etmeye hazırım.");
     } finally {
       setIsTyping(false);
@@ -57,7 +59,7 @@ const useFillSurvey = () => {
     try {
       // Backend'den verileri JSON olarak ayıkla
       const { extractedData } = await extractSurveyData(finalHistory);
-      await addResponseToSurvey(survey.id, {
+      await submitResponse(survey.id, {
         type: 'agent_chat',
         data: extractedData,
         fullHistory: finalHistory,
@@ -85,7 +87,7 @@ const useFillSurvey = () => {
     try {
       const reply = await sendMessageToAgent(survey.systemPrompt, newHistory, userText);
       processBotReply(reply);
-    } catch (e) {
+    } catch {
       addBotMessage("Bir bağlantı sorunu oluştu, lütfen tekrar deneyin.");
     } finally {
       setIsTyping(false);
@@ -103,14 +105,31 @@ const useFillSurvey = () => {
       return { ...p, [qId]: cur.includes(opt) ? cur.filter(i => i !== opt) : [...cur, opt] };
     });
   };
+  const totalSteps = survey?.questions?.length || 0;
+
+  const handleNext = () => {
+    if (currentStep < totalSteps - 1) {
+      setCurrentStep(prev => prev + 1);
+    } else {
+      submitClassicSurvey();
+    }
+  };
+
+  const handlePrev = () => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+
   const submitClassicSurvey = async () => {
-    await addResponseToSurvey(survey.id, answers);
+    await submitResponse(survey.id, answers);
     setIsFinished(true);
   };
 
   return {
     survey, isFinished, answers, handleAnswerChange, handleCheckboxChange,
-    submitClassicSurvey, messages, inputText, setInputText, isTyping, handleAgentSend
+    submitClassicSurvey, messages, inputText, setInputText, isTyping, handleAgentSend,
+    currentStep, totalSteps, handleNext, handlePrev, id
   };
 };
 

@@ -1,20 +1,17 @@
-// src/App.jsx
 import React from 'react';
 import { Outlet } from 'react-router-dom';
-import Navbar from './components/Navbar';
-// import MainLayout from './layout/MainLayout'; // <-- Bunu silebilirsin, gerek kalmadı.
 
 const App = () => {
   return (
-    // Fragment yerine div kullanabiliriz, CSS için sınıf verebiliriz
-    <div className="app-layout">
-      {/* Sabit Üst Menü */}
-      <Navbar /> 
+    <div className="app-container">
+      <Outlet />
       
-      {/* Sayfaların değiştiği alan (Dinamik içerik) */}
-      <main style={{ minHeight: 'calc(100vh - 70px)' }}> 
-        <Outlet />
-      </main>
+      <style jsx="true">{`
+        .app-container {
+          min-height: 100vh;
+          width: 100%;
+        }
+      `}</style>
     </div>
   );
 };

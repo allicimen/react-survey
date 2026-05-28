@@ -1,7 +1,6 @@
-// src/firebase.js
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore"; // <-- 1. EKLENDİ
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCBgAtr9BWW4UqSOA2oc_DR23FfQ3LdRB0",
@@ -13,11 +12,7 @@ const firebaseConfig = {
   measurementId: "G-0YHZ1BZCL3"
 };
 
-// Firebase'i başlatıyoruz
 const app = initializeApp(firebaseConfig);
 
-// Giriş işlemleri için 'auth'u dışarı aktarıyoruz
 export const auth = getAuth(app);
-
-// Veritabanı işlemleri için 'db'yi dışarı aktarıyoruz
-export const db = getFirestore(app); // <-- 2. EKLENDİ
+export const db = getFirestore(app);

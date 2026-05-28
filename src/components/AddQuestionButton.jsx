@@ -1,43 +1,56 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { Plus } from 'lucide-react';
 
-// Props:
-// onClick: Tıklanınca yeni soru ekleyecek
 const AddQuestionButton = ({ onClick }) => {
-  // Hover durumunu takip etmek için state (modern görünüm için)
-  const [isHovered, setIsHovered] = useState(false);
-
   return (
     <div title="Soru Ekle">
-      <button 
-        onClick={onClick} 
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '44px',     // Biraz büyüttük
-            height: '44px',
-            border: '1px solid #e2e8f0',
-            borderRadius: '50%', 
-            backgroundColor: isHovered ? '#f8fafc' : '#fff', // Üzerine gelince hafif gri
-            boxShadow: isHovered ? '0 4px 6px -1px rgba(0,0,0,0.1)' : '0 1px 3px rgba(0,0,0,0.1)', // Üzerine gelince gölge artar
-            cursor: 'pointer', // <-- İSTEDİĞİN ÖZELLİK: EL İŞARETİ
-            transition: 'all 0.2s ease', // Yumuşak geçiş
-            outline: 'none'
-        }}
-      >
-        {/* Artı (+) işareti */}
-        <span style={{ 
-          fontSize: '26px', 
-          color: isHovered ? '#2563eb' : '#64748b', // Üzerine gelince mavi olsun
-          fontWeight: '400',
-          lineHeight: '1',
-          marginBottom: '2px' // Görsel olarak tam ortalamak için
-        }}>
-          +
+      <button onClick={onClick} className="add-question-btn">
+        <span className="plus-icon" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Plus size={24} />
         </span>
       </button>
+
+      <style jsx="true">{`
+        .add-question-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 48px;
+          height: 48px;
+          border: 1px solid var(--border);
+          border-radius: 50%;
+          background-color: var(--bg-card);
+          box-shadow: var(--shadow-sm);
+          cursor: pointer;
+          transition: var(--transition);
+          outline: none;
+        }
+
+        .add-question-btn:hover {
+          transform: translateY(-2px) scale(1.05);
+          border-color: var(--primary);
+          background-color: var(--primary-light);
+          box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+        }
+
+        .add-question-btn:active {
+          transform: translateY(0) scale(0.95);
+        }
+
+        .plus-icon {
+          font-size: 24px;
+          color: var(--text-muted);
+          font-weight: 500;
+          transition: var(--transition);
+          display: inline-block;
+          line-height: 1;
+        }
+
+        .add-question-btn:hover .plus-icon {
+          color: var(--primary);
+          transform: rotate(90deg);
+        }
+      `}</style>
     </div>
   );
 };

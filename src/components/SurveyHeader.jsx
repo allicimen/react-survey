@@ -1,4 +1,5 @@
 import React from 'react';
+import { Trash2 } from 'lucide-react';
 
 // Props Açıklaması:
 // element: O anki başlık verisi (id, text, type)
@@ -52,7 +53,7 @@ const SurveyHeader = ({ element, onUpdate, onDelete }) => {
         }}
         title="Başlığı Sil"
       >
-        🗑️
+        <Trash2 size={16} />
       </button>
     </div>
   );

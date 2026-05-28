@@ -6,10 +6,6 @@ import React from 'react';
  * İkon içermez, sadece metin tabanlıdır.
  */
 const QuestionTypeSelector = ({ selectedType, onTypeChange }) => {
-  // Mobil kontrolü
-  const isMobile = window.innerWidth < 768;
-
-  // Seçenekler (İkonlar kaldırıldı)
   const types = [
     { id: 'text', label: 'Kısa Yanıt' },
     { id: 'paragraph', label: 'Uzun Yanıt' },
@@ -17,43 +13,69 @@ const QuestionTypeSelector = ({ selectedType, onTypeChange }) => {
     { id: 'checkbox', label: 'Çoklu Seçim' }
   ];
 
-  // Konteyner Stili: Mobilde 2 sütunlu grid, masaüstünde yan yana esnek dizilim
-  const containerStyle = {
-    display: 'grid',
-    gridTemplateColumns: isMobile ? '1fr 1fr' : 'repeat(auto-fill, minmax(130px, 1fr))',
-    gap: '8px',
-    width: '100%',
-    marginTop: isMobile ? '10px' : '0'
-  };
-
   return (
-    <div className="question-type-selector" style={containerStyle}>
+    <div className="question-type-selector">
       {types.map((type) => (
         <button
           key={type.id}
           type="button"
           onClick={() => onTypeChange(type.id)}
-          style={{
-            padding: isMobile ? '12px 4px' : '10px 12px',
-            borderRadius: '8px',
-            border: selectedType === type.id ? '2px solid #2563eb' : '1px solid #dadce0',
-            backgroundColor: selectedType === type.id ? '#eff6ff' : '#f8f9fa',
-            color: selectedType === type.id ? '#2563eb' : '#3c4043',
-            cursor: 'pointer',
-            fontSize: isMobile ? '12px' : '13px',
-            fontWeight: '600',
-            textAlign: 'center',
-            transition: 'all 0.2s ease',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '44px', // Dokunma alanı için uygun yükseklik
-            boxSizing: 'border-box'
-          }}
+          className={`type-btn ${selectedType === type.id ? 'active' : ''}`}
         >
           {type.label}
         </button>
       ))}
+
+      <style jsx="true">{`
+        .question-type-selector {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+          gap: 8px;
+          width: 100%;
+        }
+
+        .type-btn {
+          padding: 10px 12px;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          background-color: var(--bg-main);
+          color: var(--text-main);
+          cursor: pointer;
+          font-size: 0.8rem;
+          font-weight: 600;
+          text-align: center;
+          transition: var(--transition);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 44px;
+          box-sizing: border-box;
+        }
+
+        .type-btn:hover {
+          border-color: var(--primary);
+          background-color: var(--primary-light);
+          color: var(--primary);
+        }
+
+        .type-btn.active {
+          border: 2px solid var(--primary);
+          background-color: var(--primary-light);
+          color: var(--primary);
+          box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        @media (max-width: 768px) {
+          .question-type-selector {
+            grid-template-columns: 1fr 1fr;
+            margin-top: 10px;
+          }
+          .type-btn {
+            padding: 12px 4px;
+            font-size: 0.75rem;
+          }
+        }
+      `}</style>
     </div>
   );
 };

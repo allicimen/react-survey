@@ -1,187 +1,208 @@
-// src/pages/Home.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import useHome from '../hooks/useHome'; 
-
-// --- MODERN SVG İKONLAR ---
-const EditIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-  </svg>
-);
-
-const CopyIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-  </svg>
-);
-
-const TrashIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6"></polyline>
-    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-  </svg>
-);
+import useHome from '../hooks/useHome';
+import ShareModal from '../components/ShareModal';
+import { SurveyCardSkeleton } from '../components/Skeleton';
+import {
+  Pencil,
+  Share2,
+  Trash2,
+  Users,
+  Plus,
+  FolderOpen,
+  Search,
+  Bot,
+  ClipboardList
+} from 'lucide-react';
 
 const Home = () => {
   const navigate = useNavigate();
+  const [shareData, setShareData] = useState({ isOpen: false, id: null, title: '' });
+  
   const {
     searchTerm, setSearchTerm,
     filteredSurveys,
     totalSurveys,
     totalResponses,
     handleDelete,
-    handleShare,
     formatDate,
     isLoading
   } = useHome();
 
-  // MOBİL KONTROLÜ (Yatay kaymayı engellemek için kritik)
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const openShareModal = (e, id, title) => {
+    if (e) e.stopPropagation(); 
+    setShareData({ isOpen: true, id, title });
+  };
 
   if (isLoading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh', flexDirection: 'column', gap: '15px' }}>
-        <div style={{ width: '40px', height: '40px', border: '4px solid #e2e8f0', borderTop: '4px solid #2563eb', borderRadius: '50%', animation: 'spin 1s linear infinite' }}></div>
-        <div style={{ color: '#64748b', fontWeight: '500', fontSize: '16px' }}>Veriler Yükleniyor...</div>
-        <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+      <div className="dashboard">
+        <header className="dashboard-header">
+          <div><div style={{ width: '150px', height: '32px', background: '#eee', borderRadius: '8px', marginBottom: '8px' }}></div></div>
+        </header>
+        <section className="stats-grid">
+          <div className="card" style={{ height: '100px', background: '#f9f9f9' }}></div>
+          <div className="card" style={{ height: '100px', background: '#f9f9f9' }}></div>
+        </section>
+        <div className="survey-grid">
+          <SurveyCardSkeleton />
+          <SurveyCardSkeleton />
+          <SurveyCardSkeleton />
+        </div>
       </div>
     );
   }
 
-  // --- DİNAMİK STİLLER (Masaüstü Boşluk & Mobil Kayma Çözümü) ---
-  const containerStyle = {
-    maxWidth: isMobile ? '100%' : '1200px', // Masaüstünde 1200px yaptık
-    margin: '0 auto',
-    padding: isMobile ? '20px 15px' : '40px 24px', // Mobilde kenarları daralttık
-    paddingBottom: '100px',
-    boxSizing: 'border-box',
-    overflowX: 'hidden' // Yatay kaymayı kesin olarak engeller
-  };
-
-  const gridStyle = {
-    display: 'grid',
-    // Mobilde tam genişlik, masaüstünde esnek kartlar
-    gridTemplateColumns: isMobile 
-        ? '1fr' 
-        : 'repeat(auto-fill, minmax(min(100%, 350px), 1fr))', 
-    gap: isMobile ? '16px' : '24px',
-    justifyContent: 'start'
-  };
-
   return (
-    <div style={containerStyle}>
-      
-      {/* 1. ÜST BAR & GERİ BUTONU */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '30px' }}>
-        <button
-          onClick={() => navigate('/')}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px',
-            backgroundColor: 'white', border: '1px solid #e2e8f0', borderRadius: '30px',
-            cursor: 'pointer', color: '#64748b', fontWeight: '600', fontSize: '14px',
-            transition: 'all 0.2s'
-          }}
-          onMouseOver={(e) => { e.currentTarget.style.backgroundColor = '#f1f5f9'; e.currentTarget.style.color = '#1e293b'; }}
-          onMouseOut={(e) => { e.currentTarget.style.backgroundColor = 'white'; e.currentTarget.style.color = '#64748b'; }}
-        >
-          <span>←</span> Ana Sayfaya Dön
-        </button>
-      </div>
-
-      {/* 2. İSTATİSTİKLER */}
-      <div style={{ marginBottom: '40px' }}>
-        <h1 style={{ fontSize: isMobile ? '24px' : '28px', color: '#1e293b', marginBottom: '20px', fontWeight:'800' }}>Panelim</h1>
-        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
-          <div style={statsCardStyle}>
-            <div style={{ fontSize: '14px', color: '#64748b', fontWeight:'500' }}>Toplam Anket</div>
-            <div style={{ fontSize: '36px', fontWeight: '800', color: '#0f172a' }}>{totalSurveys}</div>
-          </div>
-          <div style={statsCardStyle}>
-            <div style={{ fontSize: '14px', color: '#64748b', fontWeight:'500' }}>Toplam Yanıt</div>
-            <div style={{ fontSize: '36px', fontWeight: '800', color: '#0f172a' }}>{totalResponses}</div>
-          </div>
-          <Link to="/create" style={{ ...statsCardStyle, backgroundColor: '#2563eb', color: 'white', justifyContent: 'center', alignItems: 'center', cursor: 'pointer', textDecoration:'none', border:'none' }}>
-            <div style={{ fontSize: '28px' }}>+</div>
-            <div style={{ fontWeight: '600', fontSize:'16px' }}>Yeni Anket Oluştur</div>
-          </Link>
+    <div className="dashboard">
+      <header className="dashboard-header">
+        <div>
+          <h1>Panelim</h1>
+          <p>Anketlerini ve yanıtlarını buradan takip edebilirsin.</p>
         </div>
-      </div>
+        <Link to="/create" className="btn btn-primary">
+          <Plus size={18} /> Yeni Anket Oluştur
+        </Link>
+      </header>
 
-      {/* 3. ARAMA */}
-      <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', alignItems: isMobile ? 'flex-start' : 'center', marginBottom: '24px', gap: '15px' }}>
-        <h2 style={{ fontSize: '20px', fontWeight: '700', color: '#334155', margin: 0 }}>Anketlerim</h2>
-        <div style={{ position: 'relative', width: isMobile ? '100%' : 'auto' }}>
-          <span style={{ position: 'absolute', left: '14px', top: '11px', color: '#94a3b8', fontSize:'16px' }}>🔍</span>
+      <section className="stats-grid">
+        <div className="card stats-card">
+          <span className="stats-label">Toplam Anket</span>
+          <span className="stats-value">{totalSurveys}</span>
+        </div>
+        <div className="card stats-card">
+          <span className="stats-label">Toplam Yanıt</span>
+          <span className="stats-value">{totalResponses}</span>
+        </div>
+      </section>
+
+      <div className="content-header">
+        <h2>Anketlerim</h2>
+        <div className="search-wrapper">
+          <Search size={16} className="search-icon" />
           <input 
-            type="text" placeholder="Başlığa göre ara..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ padding: '12px 12px 12px 40px', borderRadius: '12px', border: '1px solid #e2e8f0', outline: 'none', width: isMobile ? '100%' : '260px', fontSize: '14px', backgroundColor: '#f8fafc', color: '#334155' }}
+            type="text" 
+            placeholder="Anket adı ile ara..." 
+            value={searchTerm} 
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
       </div>
 
-      {/* 4. LİSTE */}
-      <div style={gridStyle}>
-        {filteredSurveys.length === 0 ? (
-          <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '80px', backgroundColor: '#fff', borderRadius: '24px', border: '2px dashed #e2e8f0' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px', opacity: 0.5 }}>📭</div>
-            <h3 style={{ color: '#334155', marginBottom: '8px', fontSize:'18px' }}>Henüz bir anket yok</h3>
-            <p style={{ color: '#64748b', marginBottom: '24px' }}>Hemen yeni bir tane oluşturarak başlayabilirsin.</p>
-            <Link to="/create" style={{ textDecoration: 'none', padding:'12px 24px', backgroundColor:'#2563eb', color:'white', borderRadius:'10px', fontWeight:'600' }}>Oluştur</Link>
-          </div>
-        ) : (
-          filteredSurveys.map((survey) => {
+      {filteredSurveys.length === 0 ? (
+        <div className="empty-state card">
+          <div className="empty-icon"><FolderOpen size={48} strokeWidth={1.5} /></div>
+          <h3>Anket Bulunamadı</h3>
+          <p>{searchTerm ? "Aramanızla eşleşen bir anket yok." : "Henüz bir anket oluşturmadınız. Hemen başlayın!"}</p>
+          {!searchTerm && (
+            <Link to="/create" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+              İlk Anketi Oluştur
+            </Link>
+          )}
+        </div>
+      ) : (
+        <div className="survey-grid">
+          {filteredSurveys.map((survey) => {
             const isAgent = survey.mode === 'agent';
-            const accentColor = isAgent ? '#8b5cf6' : '#2563eb'; 
-            const softBg = isAgent ? '#f5f3ff' : '#eff6ff';      
-            const labelText = isAgent ? "AI AJANI" : "KLASİK ANKET";
-
             return (
-              <div 
-                key={survey.id} 
-                style={{ ...surveyCardStyle, borderLeft: `6px solid ${accentColor}` }}
-              >
-                <Link to={`/results/${survey.id}`} style={{textDecoration:'none', color:'inherit', display:'block', flex:1}}>
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                       <div style={{ padding: '8px 12px', borderRadius: '8px', backgroundColor: softBg, color: accentColor, fontSize: '12px', fontWeight: '800', letterSpacing: '0.5px', textTransform: 'uppercase' }}>{labelText}</div>
-                       <span style={{ fontSize: '12px', color: '#94a3b8', fontWeight: '600', backgroundColor:'#f8fafc', padding:'6px 10px', borderRadius:'20px' }}>{formatDate(survey.createdAt)}</span>
-                    </div>
-                    <h3 style={{ fontSize: '18px', fontWeight: '800', color: '#1e293b', margin: '0 0 8px 0', lineHeight: '1.4' }}>{survey.title}</h3>
-                    <p style={{ fontSize: '14px', color: '#64748b', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: isMobile ? '100%' : '280px' }}>{survey.description || "Açıklama girilmemiş..."}</p>
+              <div key={survey.id} className={`card survey-card ${isAgent ? 'agent' : ''}`}>
+                <div className="survey-card-body" onClick={() => navigate(`/results/${survey.id}`)}>
+                  <div className="survey-badge">
+                    {isAgent
+                      ? <><Bot size={12} /> AI Ajanı</>
+                      : <><ClipboardList size={12} /> Klasik</>
+                    }
                   </div>
-                </Link>
+                  <h3 className="survey-title">{survey.title}</h3>
+                  <p className="survey-desc">{survey.description || "Açıklama girilmemiş..."}</p>
+                  
+                  <div className="survey-meta">
+                    <span className="meta-item">
+                      <Users size={13} /> {survey.responses?.length || 0} Yanıt
+                    </span>
+                    <span className="meta-item">•</span>
+                    <span className="meta-item">{formatDate(survey.createdAt)}</span>
+                  </div>
+                </div>
 
-                <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '700', color: '#475569' }}>
-                    <span style={{fontSize:'18px'}}>👥</span> {survey.responses ? survey.responses.length : 0} <span style={{fontWeight:'400', color:'#94a3b8'}}>Yanıt</span>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    <button onClick={() => navigate(`/edit/${survey.id}`)} title="Düzenle" style={{ ...actionBtnStyle, backgroundColor:'#fff7ed', color:'#ea580c' }}> <EditIcon /> </button>
-                    <button onClick={(e) => handleShare(survey.id, e)} title="Linki Kopyala" style={actionBtnStyle}> <CopyIcon /> </button>
-                    <button onClick={(e) => handleDelete(survey.id, e)} title="Sil" style={{ ...actionBtnStyle, color: '#ef4444', backgroundColor: '#fef2f2' }}> <TrashIcon /> </button>
-                  </div>
+                <div className="survey-card-actions">
+                  <button onClick={(e) => { e.stopPropagation(); navigate(`/edit/${survey.id}`); }} className="action-btn" title="Düzenle">
+                    <Pencil size={15} />
+                  </button>
+                  <button onClick={(e) => openShareModal(e, survey.id, survey.title)} className="action-btn" title="Paylaş">
+                    <Share2 size={15} />
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); handleDelete(survey.id, e); }} className="action-btn delete" title="Sil">
+                    <Trash2 size={15} />
+                  </button>
                 </div>
               </div>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+      )}
+
+      <ShareModal 
+        isOpen={shareData.isOpen} 
+        onClose={() => setShareData({ ...shareData, isOpen: false })}
+        surveyId={shareData.id}
+        surveyTitle={shareData.title}
+      />
+
+      <style jsx="true">{`
+        .dashboard { max-width: 1100px; margin: 0 auto; }
+        .dashboard-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; }
+        .dashboard-header h1 { margin: 0; font-size: 1.75rem; font-weight: 800; }
+        .dashboard-header p { margin: 0.25rem 0 0 0; color: var(--text-muted); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+        .stats-card { display: flex; flex-direction: column; gap: 0.5rem; }
+        .stats-label { font-size: 0.875rem; color: var(--text-muted); font-weight: 500; }
+        .stats-value { font-size: 2rem; font-weight: 800; color: var(--primary); }
+
+        .content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .search-wrapper { position: relative; width: 300px; display: flex; align-items: center; }
+        .search-icon { position: absolute; left: 12px; color: var(--text-muted); pointer-events: none; }
+        .search-wrapper input { width: 100%; padding: 0.6rem 1rem 0.6rem 2.5rem; border-radius: var(--radius-md); border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); outline: none; transition: var(--transition); }
+        .search-wrapper input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+
+        .survey-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+        .survey-card { display: flex; flex-direction: column; padding: 0; overflow: hidden; cursor: pointer; }
+        .survey-card.agent { border-color: #8b5cf6; }
+        .survey-card-body { padding: 1.5rem; flex: 1; }
+
+        .survey-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          padding: 0.25rem 0.6rem;
+          border-radius: 20px;
+          font-size: 0.75rem;
+          font-weight: 700;
+          background: var(--primary-light);
+          color: var(--primary);
+          margin-bottom: 1rem;
+        }
+        .survey-card.agent .survey-badge { background: rgba(139, 92, 246, 0.1); color: #7c3aed; }
+
+        .survey-title { font-size: 1.1rem; font-weight: 700; margin: 0 0 0.5rem 0; color: var(--text-main); }
+        .survey-desc { font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .survey-meta { display: flex; align-items: center; gap: 0.75rem; font-size: 0.8rem; color: var(--text-muted); }
+        .meta-item { display: flex; align-items: center; gap: 0.3rem; }
+
+        .survey-card-actions { display: flex; justify-content: flex-end; gap: 0.5rem; padding: 1rem 1.5rem; background: var(--bg-main); border-top: 1px solid var(--border); }
+
+        .empty-state { text-align: center; padding: 4rem 2rem; display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+        .empty-icon { color: var(--text-muted); opacity: 0.5; }
+
+        @media (max-width: 768px) {
+          .dashboard-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+          .content-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+          .search-wrapper { width: 100%; }
+        }
+      `}</style>
     </div>
   );
 };
-
-const statsCardStyle = { flex: 1, minWidth: '220px', backgroundColor: '#fff', padding: '24px', borderRadius: '20px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', justifyContent: 'center' };
-const surveyCardStyle = { backgroundColor: '#fff', borderRadius: '20px', padding: '24px', borderTop: '1px solid #f1f5f9', borderRight: '1px solid #f1f5f9', borderBottom: '1px solid #f1f5f9', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', transition: 'all 0.3s', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', minHeight: '220px', position: 'relative', overflow: 'hidden' };
-const actionBtnStyle = { width: '40px', height: '40px', borderRadius: '10px', border: 'none', backgroundColor: '#f1f5f9', color: '#64748b', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'background 0.2s', fontSize: '16px' };
 
 export default Home;

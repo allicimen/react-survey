@@ -1,94 +1,104 @@
-// src/services/dbService.js
-import { db, auth } from "../firebase"; // <-- auth eklendi
-import { 
-  collection, 
-  doc, 
-  getDocs, 
-  getDoc, 
-  setDoc,
-  updateDoc, 
-  deleteDoc, 
-  arrayUnion,
-  query,  // <-- Sorgu oluşturmak için
-  where   // <-- Filtrelemek için
-} from "firebase/firestore";
+import { db, auth } from "../firebase";
+import { collection, doc, getDoc, getDocs, setDoc, addDoc, deleteDoc, query, where } from "firebase/firestore";
 
-const COLLECTION_NAME = "surveys";
-
-// 1. Sadece GİRİŞ YAPAN KULLANICININ anketlerini getirir
 export const getSurveys = async () => {
   try {
-    const user = auth.currentUser;
-    // Eğer kullanıcı giriş yapmamışsa veri gösterme (Boş dizi dön)
-    if (!user) return [];
+    // Sadece mevcut kullanıcının anketlerini getirmek isterseniz where() eklenebilir,
+    // ancak orijinal kodda tümünü çekiyor.
+    const q = collection(db, "surveys");
+    const snapshot = await getDocs(q);
+    const surveys = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    // SORGULAMA: userId'si benim uid'me eşit olanları getir
-    const q = query(collection(db, COLLECTION_NAME), where("userId", "==", user.uid));
+    // Bütün yanıtları tek seferde çekip anketlere dağıtıyoruz (N+1 sorgusunu önlemek için)
+    const respQ = collection(db, "responses");
+    const respSnap = await getDocs(respQ);
+    const responsesBySurvey = {};
     
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => doc.data());
+    respSnap.forEach(doc => {
+      const data = doc.data();
+      if (!responsesBySurvey[data.surveyId]) {
+        responsesBySurvey[data.surveyId] = [];
+      }
+      responsesBySurvey[data.surveyId].push(data);
+    });
+
+    return surveys.map(survey => ({
+      ...survey,
+      responses: responsesBySurvey[survey.id] || []
+    }));
   } catch (error) {
-    console.error("Firebase veri çekme hatası:", error);
+    console.error("Hata:", error);
     return [];
   }
 };
 
-// 2. Tek bir anketi ID'sine göre bulur
 export const getSurvey = async (id) => {
   try {
-    const docRef = doc(db, COLLECTION_NAME, id);
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      return docSnap.data();
-    } else {
-      console.log("Anket bulunamadı!");
-      return null;
+    const docRef = doc(db, "surveys", id);
+    const snapshot = await getDoc(docRef);
+    if (snapshot.exists()) {
+      return { id: snapshot.id, ...snapshot.data() };
     }
+    return null;
   } catch (error) {
-    console.error("Anket getirme hatası:", error);
+    console.error("Hata:", error);
     return null;
   }
 };
 
-// 3. Anketi kaydeder (veya varsa günceller)
-// setDoc kullandığımız için ID aynıysa üzerine yazar (Update gibi çalışır)
+export const getSurveyResults = async (id) => {
+  try {
+    const docRef = doc(db, "surveys", id);
+    const surveySnap = await getDoc(docRef);
+    if (!surveySnap.exists()) return null;
+    
+    const q = query(collection(db, "responses"), where("surveyId", "==", id));
+    const respSnap = await getDocs(q);
+    const responses = respSnap.docs.map(doc => doc.data());
+    
+    return { id: surveySnap.id, ...surveySnap.data(), responses };
+  } catch (error) {
+    console.error("Hata:", error);
+    return null;
+  }
+};
+
 export const saveSurvey = async (survey) => {
   try {
-    await setDoc(doc(db, COLLECTION_NAME, survey.id), survey);
+    const user = auth.currentUser;
+    if (!user) throw new Error("Giriş yapılmadı");
+    
+    const surveyData = { ...survey, userId: user.uid };
+    const { id } = surveyData;
+    
+    if (id) {
+      await setDoc(doc(db, "surveys", id), surveyData, { merge: true });
+      return surveyData;
+    } else {
+      const docRef = await addDoc(collection(db, "surveys"), surveyData);
+      return { id: docRef.id, ...surveyData };
+    }
   } catch (error) {
-    console.error("Kaydetme hatası:", error);
+    console.error("Hata:", error);
     throw error;
   }
 };
 
-// 4. Güncelleme Fonksiyonu
-export const updateSurvey = saveSurvey;
-
-// 5. Anketi siler
 export const deleteSurvey = async (id) => {
   try {
-    await deleteDoc(doc(db, COLLECTION_NAME, id));
-  } catch (error) {
-    console.error("Silme hatası:", error);
+    await deleteDoc(doc(db, "surveys", id));
+    return true;
+  } catch {
+    return false;
   }
 };
 
-// 6. Ankete yeni bir cevap ekler
-export const addResponseToSurvey = async (surveyId, response) => {
+export const submitResponse = async (surveyId, answers) => {
   try {
-    const surveyRef = doc(db, COLLECTION_NAME, surveyId);
-
-    // arrayUnion: Mevcut diziye yeni elemanı ekler
-    await updateDoc(surveyRef, {
-      responses: arrayUnion({
-        ...response,
-        submittedAt: new Date().toISOString()
-      })
-    });
+    await addDoc(collection(db, "responses"), { surveyId, answers });
     return true;
   } catch (error) {
-    console.error("Cevap ekleme hatası:", error);
+    console.error("Hata:", error);
     return false;
   }
 };

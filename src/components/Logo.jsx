@@ -6,7 +6,7 @@ const Logo = () => {
     <div style={{ 
       width: '36px', 
       height: '36px', 
-      background: '#2563eb', 
+      background: 'linear-gradient(135deg, #7c3aed 0%, #ec4899 100%)', 
       borderRadius: '10px', 
       display:'flex', 
       alignItems:'center', 

@@ -1,57 +1,72 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Logo from '../components/Logo'; 
+import { Sparkles, Check } from 'lucide-react'; 
+// eslint-disable-next-line no-unused-vars
+import { motion } from 'framer-motion';
 
 const LandingPage = () => {
   const navigate = useNavigate();
 
   return (
-    // ANA KAPLAYICI
+// ANA KAPLAYICI
     <div style={{
       minHeight: '100vh',
       width: '100vw',
-      backgroundColor: '#f3f4f6', 
+      backgroundColor: 'transparent', // CSS'ten gelen gradient arka planını kullan
       display: 'flex',
       flexDirection: 'column',
-      fontFamily: "'Inter', sans-serif"
+      fontFamily: "'Inter', sans-serif",
+      overflow: 'hidden'
     }}>
       
       {/* 1. ÜST NAVBAR */}
-      <nav style={{
-        padding: '24px 40px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
-      }}>
+      <motion.nav 
+        initial={{ y: -50, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        style={{
+          padding: '24px 40px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          position: 'relative',
+          zIndex: 10
+        }}
+      >
         {/* Logo Bölümü */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 'bold', fontSize: '20px', color: '#111827' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: '800', fontSize: '22px', color: 'var(--text-main)', letterSpacing: '-0.5px' }}>
           <Logo />
           AI Survey
         </div>
 
         {/* Sağ Butonlar */}
-        <div style={{ display: 'flex', gap: '15px' }}>
+        <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
           <Link to="/login" style={{ 
-            textDecoration: 'none', color: '#4b5563', fontWeight: '600', padding: '10px 20px' 
-          }}>
+            textDecoration: 'none', color: 'var(--text-muted)', fontWeight: '600', transition: 'color 0.2s'
+          }} onMouseOver={(e) => e.target.style.color = 'var(--primary)'} onMouseOut={(e) => e.target.style.color = 'var(--text-muted)'}>
             Giriş Yap
           </Link>
           
-          {/* 👇 GÜNCELLENEN KISIM: Link adresi /register yapıldı */}
           <Link to="/register" style={{ 
             textDecoration: 'none', 
-            backgroundColor: 'white', 
-            color: '#2563eb', 
-            border: '1px solid #e5e7eb',
-            fontWeight: '600', 
+            backgroundColor: 'var(--bg-card)', 
+            color: 'var(--primary)', 
+            border: '1px solid var(--border)',
+            fontWeight: '700', 
             padding: '10px 24px',
-            borderRadius: '8px',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-          }}>
+            borderRadius: '12px',
+            boxShadow: 'var(--shadow-sm)',
+            transition: 'all 0.3s ease',
+            backdropFilter: 'blur(10px)'
+          }}
+          onMouseOver={(e) => { e.target.style.transform = 'translateY(-2px)'; e.target.style.boxShadow = 'var(--shadow-md)'; }}
+          onMouseOut={(e) => { e.target.style.transform = 'translateY(0)'; e.target.style.boxShadow = 'var(--shadow-sm)'; }}
+          >
             Kayıt Ol
           </Link>
         </div>
-      </nav>
+      </motion.nav>
 
       {/* 2. ORTA ALAN (HERO SECTION) */}
       <div style={{
@@ -61,69 +76,99 @@ const LandingPage = () => {
         justifyContent: 'center', 
         alignItems: 'center',     
         textAlign: 'center',      
-        padding: '0 20px'
+        padding: '0 20px',
+        position: 'relative',
+        zIndex: 5
       }}>
         
         {/* Başlık */}
-        <h1 style={{ 
-          fontSize: '56px', 
-          fontWeight: '800', 
-          color: '#111827', 
-          margin: '0 0 24px 0',
-          lineHeight: '1.1',
-          maxWidth: '800px'
-        }}>
-          Anketlerinizi <span style={{ color: '#2563eb' }}>Yapay Zeka</span> ile<br />
+        <motion.h1 
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
+          style={{ 
+            fontSize: 'clamp(40px, 6vw, 72px)', 
+            fontWeight: '800', 
+            color: 'var(--text-main)', 
+            margin: '0 0 24px 0',
+            lineHeight: '1.1',
+            maxWidth: '900px',
+            letterSpacing: '-1.5px'
+          }}
+        >
+          Anketlerinizi <span style={{ 
+            background: 'linear-gradient(135deg, var(--primary), var(--secondary))',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            display: 'inline-block'
+          }}>Yapay Zeka</span> ile<br />
           Saniyeler İçinde Tasarlayın
-        </h1>
+        </motion.h1>
 
         {/* Alt Açıklama */}
-        <p style={{ 
-          fontSize: '20px', 
-          color: '#6b7280', 
-          maxWidth: '600px',
-          margin: '0 0 48px 0',
-          lineHeight: '1.6'
-        }}>
-          Sıkıcı formlarla uğraşmayı bırakın. Konuyu söyleyin, yapay zeka sizin için en doğru soruları hazırlasın ve insanmış gibi sohbet ederek verileri toplasın.
-        </p>
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, delay: 0.4, ease: "easeOut" }}
+          style={{ 
+            fontSize: 'clamp(16px, 2vw, 22px)', 
+            color: 'var(--text-muted)', 
+            maxWidth: '650px',
+            margin: '0 0 48px 0',
+            lineHeight: '1.6'
+          }}
+        >
+          Sıkıcı formlarla uğraşmayı bırakın. Sadece konuyu söyleyin, yapay zeka sizin için en doğru soruları hazırlasın ve insanmış gibi sohbet ederek verileri toplasın.
+        </motion.p>
 
         {/* DEV BUTON */}
-        <button 
-          onClick={() => navigate('/login')} // İstersen burayı da /register yapabilirsin
+        <motion.button 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5, delay: 0.6, type: "spring", stiffness: 200 }}
+          whileHover={{ scale: 1.05, boxShadow: "0 20px 40px -10px rgba(124, 58, 237, 0.5)" }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate('/login')}
           style={{
             padding: '20px 48px',
             fontSize: '18px',
-            fontWeight: '600',
+            fontWeight: '700',
             color: 'white',
-            backgroundColor: '#2563eb', 
+            background: 'linear-gradient(135deg, var(--primary), var(--primary-hover))', 
             border: 'none',
             borderRadius: '50px', 
             cursor: 'pointer',
-            boxShadow: '0 10px 25px -5px rgba(37, 99, 235, 0.4)', 
+            boxShadow: 'var(--shadow-md)', 
             display: 'flex',
             alignItems: 'center',
             gap: '12px',
-            transition: 'transform 0.2s'
           }}
-          onMouseOver={(e) => e.target.style.transform = 'translateY(-3px)'}
-          onMouseOut={(e) => e.target.style.transform = 'translateY(0)'}
         >
-          <span>✨</span> Yapay Zeka Destekli Anket Tasarla
-        </button>
+          <Sparkles size={20} /> AI ile Ücretsiz Başla
+        </motion.button>
 
-        {/* Alt Özellikler */}
-        <div style={{ marginTop: '40px', display: 'flex', gap: '30px', color: '#6b7280', fontSize: '14px', fontWeight: '500' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: '#2563eb' }}>✓</span> Ücretsiz Başlangıç
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1, delay: 0.8 }}
+          style={{ marginTop: '50px', display: 'flex', gap: '40px', color: 'var(--text-muted)', fontSize: '15px', fontWeight: '600' }}
+        >
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: 'var(--primary)', backgroundColor: 'var(--primary-light)', padding: '4px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Check size={14} strokeWidth={3} />
+            </span> Saniyeler İçinde Üret
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: '#2563eb' }}>✓</span> Kredi Kartı Gerekmez
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: 'var(--primary)', backgroundColor: 'var(--primary-light)', padding: '4px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Check size={14} strokeWidth={3} />
+            </span> Yapay Zeka Ajanı
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ color: '#2563eb' }}>✓</span> 7/24 AI Desteği
+          <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ color: 'var(--primary)', backgroundColor: 'var(--primary-light)', padding: '4px', borderRadius: '50%', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Check size={14} strokeWidth={3} />
+            </span> Akıllı Analiz Raporları
           </span>
-        </div>
+        </motion.div>
 
       </div>
     </div>

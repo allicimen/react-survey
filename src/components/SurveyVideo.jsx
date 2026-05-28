@@ -1,4 +1,5 @@
 import React from 'react';
+import { Video, Trash2, AlertTriangle } from 'lucide-react';
 
 const SurveyVideo = ({ element, onUpdate, onDelete }) => {
   
@@ -24,13 +25,13 @@ const SurveyVideo = ({ element, onUpdate, onDelete }) => {
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
         <strong style={{ color: '#ef4444', display: 'flex', alignItems: 'center', gap: '8px' }}>
-          🎥 Video Alanı
+          <Video size={18} /> Video Alanı
         </strong>
         <button 
           onClick={() => onDelete(element.id)}
-          style={{ cursor: 'pointer', background: 'none', border: 'none', color: '#94a3b8' }}
+          style={{ cursor: 'pointer', background: 'none', border: 'none', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '4px' }}
         >
-          Sil ✕
+          <Trash2 size={14} /> Sil
         </button>
       </div>
 
@@ -59,7 +60,11 @@ const SurveyVideo = ({ element, onUpdate, onDelete }) => {
         </div>
       ) : (
         // Link girildi ama geçersizse uyarı
-        element.text && <div style={{marginTop: '10px', color: '#f59e0b', fontSize: '13px'}}>⚠️ Geçerli bir YouTube linki giriniz.</div>
+        element.text && (
+          <div style={{marginTop: '10px', color: '#f59e0b', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px'}}>
+            <AlertTriangle size={14} /> Geçerli bir YouTube linki giriniz.
+          </div>
+        )
       )}
     </div>
   );
